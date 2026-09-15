@@ -217,6 +217,57 @@ capability tags — "nobody could go," distinct from low acceptance).
   off" is only partly explained by starvation). Also T-002 implies Corporal
   Ashgrove's quiet started ~8 Aug (pre-4.2) — check against real data.
 
+### What we worked out (session 4 · 15 Sep 2026)
+
+- **Handler-level rollups can hide the starvation loop entirely.** Kip is the
+  one handler running two responders — Meteor Mite (starved, −60pp) and The
+  Gale (thriving, +ping volume). Pooled at the handler level his combined rate
+  only drops ~8pp, camouflaged in the middle of the pack. Any metric organized
+  by handler instead of by responder will miss this.
+- **Cross-checked all 25 tickets against the CSV directly.** Of 20 "gone
+  quiet"-type tickets, only ~5 (Farlight, The Undertow ×3, partial matches for
+  Corporal Ashgrove/Halfmoon) actually correspond to a real decline. The rest
+  (Nightwell, Stormwrack, Ironvale, Sgt. Falkirk, The Longcast, most of
+  Cindermark's) were filed in weeks that responder's own ping volume was flat
+  or *rising* — ticket volume is not a usable proxy for who's actually hurt
+  here. Vesper and Meteor Mite, two of the four worst-hit, filed **zero**
+  tickets; they only surface as asides in Sofia's design interviews.
+- **Timeline:** the pooled acceptance rate craters in the release week itself
+  (78.5%→54.2%, week of 8/10) and the starved four are already dipping that
+  same week. The first ticket (T-001, timeout) lands the very next day: 13
+  Aug. The first "quiet"-type ticket doesn't land until 18 Aug — six days
+  later, and it's a false positive (Nightwell, whose volume was rising).
+  Tickets then arrive at a steady ~1/day through 5 Sep with no spike at the
+  real peak (week of 8/17) and no taper as the pool partly recovers.
+- **Corrected a wrong hypothesis — don't repeat it:** pre-4.2 acceptance rate
+  is *not* a "buffer" that protected the top responders. Vesper had the
+  2nd-highest pre-release rate of all 16 responders (81.9%) and still became
+  the most starved (→6.7%); Captain Vantage had the lowest pre-release rate of
+  the top 4 (73.4%) and thrived. The CSV can't reconstruct the actual
+  `recent_acceptance` score (it's sequence-dependent, not a rolling ratio), so
+  this can't be tested cleanly from weekly totals — treat "who was protected
+  and why" as still open.
+- **No geolocation/region data exists anywhere in this repo** for responders —
+  `availability.py`'s `travel_time_minutes()` is a stub, and the CSV has no
+  location field, consistent with the cover-identity confidentiality rule. One
+  indirect signal (Kip's interview) has Meteor Mite and The Gale in the *same
+  city* with opposite outcomes, which argues against simple regional
+  clustering as the explanation.
+- **Read the routing code end to end** (`history.py`, `routing.py`,
+  `offer.py`) to answer "how does a starved responder recover": there's no
+  built-in path. The score only rises on an *accepted* offer, but
+  `offer.py`'s `dispatch()` won't reach them unless everyone ranked above them
+  on that call also declines/times out — a structural catch-22 the 2019 TODO
+  never resolved. The one way out is a specific incident close enough that
+  proximity alone (weighted 0.60) carries them despite a floor-level score —
+  which is what happened to The Undertow on 31 Aug (T-019): his one offer that
+  week arrived, then was lost to the 60s timeout before he could answer.
+- **Built an 8-slide briefing deck** for Helen (title, what-shipped, weekly
+  chart, two-failure-modes, redistribution chart, tickets-vs-data mismatch,
+  timeline, recommendation/asks) — sent to Valerie, not committed to the repo.
+  Recommendation in it: timeout-only partial revert now; proximity reweight
+  fix deferred, decided separately with Wen.
+
 ### Vocabulary quick-reference
 
 **Responder** (independent field operator, not staff) · **Handler** (manages a
