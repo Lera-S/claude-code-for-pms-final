@@ -268,6 +268,40 @@ capability tags — "nobody could go," distinct from low acceptance).
   Recommendation in it: timeout-only partial revert now; proximity reweight
   fix deferred, decided separately with Wen.
 
+### What we worked out (session 5 · 17 Sep 2026)
+
+- **Marcus's open question is answered: the reweight is not targeted.**
+  `config.py`'s weights are global constants with no branching on a
+  responder's history — `routing.py`'s `score()` applies the identical
+  formula to everyone. Confirmed against real data too: Vesper had one of
+  the best pre-release acceptance rates in the roster (~82%, not a habitual
+  decliner) and still became the most starved — proof this is a proximity
+  effect, not something aimed at people who'd been turning jobs down.
+- **Why ping volume, not just accept rate, is the metric that craters:**
+  `offer.py`'s `dispatch()` stops at the first accept — everyone ranked
+  below that point never receives an offer at all for that incident, not a
+  decline or timeout, just never reached. Explains why a starved
+  responder's per-offer miss rate can look ordinary while their total
+  offer count collapses to near zero — volume and behavior are separate
+  axes.
+- **The penalty math itself didn't change in 4.2** — `DECLINE_PENALTY`
+  (0.12) and `ACCEPTANCE_CREDIT` (0.08) are unchanged since before the
+  release; only the weights and timeout moved. From neutral (0.5), 5
+  consecutive misses wipes a responder to the score floor; climbing back
+  takes ~7 consecutive accepts, and — per T-019, The Undertow, 31 Aug —
+  each one independently needs a nearby incident, a high-enough rank to be
+  reached, and a fast-enough answer. He got the one rare nearby offer and
+  still lost it to the 60s timeout.
+- **Newcomers start at `NEUTRAL_SCORE` (0.5), not 0** — better off by
+  default than a starved veteran. There is no onboarding boost, comeback
+  bonus, or protection anywhere in the code for responders returning from
+  a long standby — the system just doesn't penalize time spent properly
+  marked unavailable; it doesn't help them get back in either.
+- **No per-call log or location data exists anywhere accessible to us** —
+  reconfirmed while probing this further; `travel_time_minutes()` is a
+  stub. A real per-call diagnosis would need to come from Wen or whoever
+  owns the production event log, not this repo.
+
 ### Vocabulary quick-reference
 
 **Responder** (independent field operator, not staff) · **Handler** (manages a
