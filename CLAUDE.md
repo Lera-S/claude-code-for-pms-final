@@ -302,6 +302,43 @@ capability tags — "nobody could go," distinct from low acceptance).
   stub. A real per-call diagnosis would need to come from Wen or whoever
   owns the production event log, not this repo.
 
+### What we worked out (session 6 · 22 Sep 2026)
+
+- **Helen's own ask (`05-super-speed/director-request.txt`) reframed the
+  target.** She's not asking for "fix the starvation problem" in general —
+  she named Wen's 2019 `history.py` TODO specifically and asked to see a
+  built solution "from the point of view of the person it happens to," not
+  a setting, before anyone touches the code. Produced
+  `05-super-speed/brief.md` (one-pager, includes a problem recap, a
+  three-move suggested solution, and a closing ask) and
+  `05-super-speed/prototype.html` (single-file clickable mockup of Kip's
+  handler console) to answer that directly.
+- **Settled solution shape: reset now, decay as the core fix, guaranteed
+  turn as backup.** Decay only eases a score back toward neutral once a
+  responder has stopped receiving offers *entirely* — not just after time
+  passes — which is what makes it answer Wen's own stated hesitation
+  (declining-while-still-reached shouldn't quietly get erased) rather than
+  overriding it. The backup guarantee bypasses rank for one occasional
+  offer only; neither mechanism boosts score above neutral without an
+  actual accept.
+- **The prototype's daily reconstruction of Meteor Mite's real trajectory
+  shows the early-warning point would have landed around 18 Aug** — about
+  a week after 4.2 shipped and roughly six days before the offers stopped
+  entirely — using the actual scoring formula (`+0.08` accept, `-0.12`
+  decline/timeout, floor 0, ceiling 1) run day-by-day. Demonstrates the
+  diagnostic value of surfacing score + trend to a handler, not just the
+  post-hoc "gone quiet" state.
+- **Open tension to resolve next session:** the prototype's console now
+  shows Kip a live score/risk indicator (gauge + warning banner), which is
+  a handler-facing signal the finalized brief's "doesn't do" list argues
+  against needing ("Kip doesn't request anything, he just sees it
+  happen"). It's framed as observational only, no action button, but
+  worth deciding with Helen whether that diagnostic view belongs in the
+  brief's language too before this goes further.
+- **Session's own prompts saved to `05-super-speed/prompts.md`** (12
+  entries, verbatim) as the running prompt-library exercise for the
+  course.
+
 ### Vocabulary quick-reference
 
 **Responder** (independent field operator, not staff) · **Handler** (manages a

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rook Dispatch — Handler Console (prototype)</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#161d2e;
+    --panel-2:#1c2438;
+    --border:#2a3350;
+    --text:#e8ecf5;
+    --text-dim:#9aa4bd;
+    --text-dimmer:#6b7591;
+    --accent:#5b8cff;
+    --good:#4fd1a5;
+    --quiet:#e0637a;
+    --quiet-bg:rgba(224,99,122,0.12);
+    --good-bg:rgba(79,209,165,0.10);
+    --bar-actual:#5b8cff;
+    --bar-actual-quiet:#3a4266;
+    --bar-projected:#4fd1a5;
+    --risk:#e0a23a;
+    --risk-bg:rgba(224,162,58,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    min-height:100vh;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .name{ font-weight:700; font-size:17px; letter-spacing:0.2px; }
+  .brand .sep{ color: var(--text-dimmer); }
+  .brand .sub{ color: var(--text-dim); font-size:14px; }
+  .who{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color: var(--text-dim);
+    font-size:14px;
+  }
+  .avatar{
+    width:30px;height:30px;border-radius:50%;
+    background: linear-gradient(135deg,#5b8cff,#3a63c9);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;color:white;
+  }
+  .top-nav{
+    max-width:900px;
+    margin:0 auto;
+    padding:18px 24px 0;
+    display:flex;
+    gap:22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .top-nav button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color: var(--text-dim);
+    font-size:13.5px;
+    font-weight:600;
+    padding:0 2px 12px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .top-nav button.active{ color: var(--text); border-color: var(--accent); }
+  .top-nav button:not(.active):hover{ color: var(--text); }
+  .back-link{
+    display:inline-block;
+    margin-bottom:16px;
+    font-size:13px;
+    color: var(--text-dim);
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:0;
+  }
+  .back-link:hover{ color: var(--text); }
+  .ov-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color: var(--text-dimmer);
+    margin-bottom:10px;
+    font-weight:700;
+  }
+  .ov-text{
+    font-size:14px;
+    color: var(--text-dim);
+    line-height:1.6;
+    margin:0 0 10px;
+  }
+  .ov-text:last-child{ margin-bottom:0; }
+  .ov-list{
+    margin:0 0 10px;
+    padding-left:20px;
+    font-size:14px;
+    color: var(--text-dim);
+    line-height:1.6;
+  }
+  .ov-list li{ margin-bottom:8px; }
+  .ov-list li:last-child{ margin-bottom:0; }
+  .cta-button{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background: var(--accent);
+    color:white;
+    border:none;
+    font-size:14px;
+    font-weight:600;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:8px;
+    transition: background 0.2s ease;
+  }
+  .cta-button:hover{ background:#4a78e0; }
+  main{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  .page-title{
+    font-size: 20px;
+    font-weight: 700;
+    margin: 4px 0 2px;
+  }
+  .page-sub{
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 26px;
+    flex-wrap:wrap;
+  }
+  .toggle-label{
+    font-size:13px;
+    color: var(--text-dimmer);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .toggle{
+    display:inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap:2px;
+  }
+  .toggle button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight:600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .toggle button.active{
+    background: var(--accent);
+    color: white;
+  }
+  .toggle button:not(.active):hover{
+    color: var(--text);
+  }
+  .ship-note{
+    font-size: 12.5px;
+    color: var(--text-dimmer);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{
+    width:6px;height:6px;border-radius:50%;
+    background: var(--good);
+    display:inline-block;
+    opacity:0;
+    transition: opacity 0.2s ease;
+  }
+  .dot.show{ opacity:1; }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .responder-name{
+    font-size: 16px;
+    font-weight:700;
+  }
+  .tags{
+    margin-top:4px;
+    font-size:12.5px;
+    color: var(--text-dimmer);
+  }
+  .tags span{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-right:6px;
+    display:inline-block;
+    margin-top:4px;
+  }
+  .status-pill{
+    font-size: 12.5px;
+    font-weight:600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space:nowrap;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .status-pill.quiet{ background: var(--quiet-bg); color: var(--quiet); }
+  .status-pill.good{ background: var(--good-bg); color: var(--good); }
+  .status-pill.risk{ background: var(--risk-bg); color: var(--risk); }
+
+  .score-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .score-label{
+    font-size:11.5px;
+    color: var(--text-dimmer);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    white-space:nowrap;
+  }
+  .score-gauge{
+    flex:1;
+    height:8px;
+    background: var(--panel-2);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .score-fill{
+    height:100%;
+    border-radius:999px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1), background 0.4s ease;
+    width:50%;
+    background: var(--good);
+  }
+  .score-fill.risk{ background: var(--risk); }
+  .score-fill.quiet{ background: var(--quiet); }
+  .score-value{
+    font-size:13px;
+    font-weight:700;
+    min-width:34px;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .score-trend{
+    font-size:12px;
+    color: var(--text-dimmer);
+    min-width:70px;
+  }
+
+  .banner{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:13px;
+    line-height:1.5;
+    margin-bottom:16px;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .banner.warn{ background: var(--quiet-bg); color: var(--quiet); border:1px solid rgba(224,99,122,0.3); }
+  .banner.ok{ background: var(--good-bg); color: var(--good); border:1px solid rgba(79,209,165,0.3); }
+  .banner-icon{ font-size:15px; line-height:1.2; }
+  .banner-text{ color: var(--text-dim); }
+  .banner-text b{ color: inherit; }
+
+  .detail-toggle{
+    background:none;
+    border:none;
+    color: var(--accent);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:8px 0 0;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .detail-toggle:hover{ color:#7ea2ff; }
+  .detail-panel{
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+    display:none;
+  }
+  .detail-panel.open{ display:block; }
+  .detail-caption{
+    font-size:12.5px;
+    color: var(--text-dimmer);
+    margin-bottom:12px;
+    line-height:1.5;
+  }
+  .day-strip{
+    display:flex;
+    gap:3px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .day-cell{
+    width:15px;
+    height:15px;
+    border-radius:3px;
+    background: var(--panel-2);
+    border:1px solid var(--border);
+    position:relative;
+  }
+  .day-cell.accept{ background: var(--good); border-color: var(--good); }
+  .day-cell.decline{ background: var(--risk); border-color: var(--risk); }
+  .day-cell.timeout{ background: var(--quiet); border-color: var(--quiet); }
+  .day-cell.marker::after{
+    content:"";
+    position:absolute;
+    left:50%; top:-7px;
+    transform:translateX(-50%);
+    width:0;height:0;
+    border-left:4px solid transparent;
+    border-right:4px solid transparent;
+    border-top:5px solid var(--risk);
+  }
+  .day-legend{
+    display:flex;
+    gap:14px;
+    font-size:11.5px;
+    color: var(--text-dimmer);
+    flex-wrap:wrap;
+  }
+  .day-legend-item{ display:flex; align-items:center; gap:5px; }
+  .day-legend-swatch{ width:10px;height:10px;border-radius:2px; flex-shrink:0; }
+  .marker-note{
+    font-size:12px;
+    color: var(--risk);
+    margin-top:10px;
+    font-weight:600;
+  }
+
+  .status-line{
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    min-height: 18px;
+    transition: opacity 0.15s ease;
+  }
+
+  .chart{
+    display:flex;
+    align-items:flex-end;
+    gap: 6px;
+    height: 90px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .bar-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100%;
+    justify-content:flex-end;
+    position:relative;
+  }
+  .bar{
+    width: 100%;
+    max-width: 26px;
+    border-radius: 4px 4px 2px 2px;
+    background: var(--bar-actual);
+    transition: height 0.5s cubic-bezier(.4,0,.2,1), background 0.4s ease, opacity 0.4s ease;
+    height: 2px;
+  }
+  .bar.quiet{ background: var(--bar-actual-quiet); }
+  .bar.projected{
+    background: repeating-linear-gradient(
+      135deg,
+      var(--bar-projected),
+      var(--bar-projected) 4px,
+      rgba(79,209,165,0.55) 4px,
+      rgba(79,209,165,0.55) 8px
+    );
+    opacity: 0;
+  }
+  .bar.projected.in{ opacity:1; }
+  .week-label{
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-top: 6px;
+    white-space:nowrap;
+  }
+  .divider{
+    position:absolute;
+    left:-3px;
+    top:-10px;
+    bottom:22px;
+    width:1px;
+    background: var(--border);
+  }
+  .divider-tag{
+    position:absolute;
+    top:-26px;
+    left:-40px;
+    font-size:9.5px;
+    color: var(--text-dimmer);
+    white-space:nowrap;
+    letter-spacing:0.03em;
+  }
+
+  .legend{
+    display:flex;
+    gap:18px;
+    margin-top:14px;
+    font-size:12px;
+    color: var(--text-dimmer);
+  }
+  .legend-item{ display:flex; align-items:center; gap:6px; }
+  .legend-swatch{ width:12px;height:8px;border-radius:2px; }
+
+  footer{
+    max-width:900px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+    color: var(--text-dimmer);
+    font-size: 12px;
+    line-height:1.6;
+  }
+  footer a{ color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="name">Rook Dispatch</span>
+    <span class="sep">/</span>
+    <span class="sub">Handler Console</span>
+  </div>
+  <div class="who">
+    <span>Signed in as Kip</span>
+    <div class="avatar">K</div>
+  </div>
+</header>
+
+<nav class="top-nav">
+  <button id="tab-overview" class="active">Overview</button>
+  <button id="tab-prototype">Prototype: Kip's console</button>
+</nav>
+
+<main>
+
+<section id="view-overview">
+  <div class="page-title">Dispatch 4.2 — quiet responders, in brief</div>
+  <div class="page-sub">The short version, before you get to the console screen itself.</div>
+
+  <div class="card">
+    <div class="ov-label">The issue</div>
+    <p class="ov-text">4.2 (shipped 12 Aug) broke two independent things at once. A callout offer timeout cut from 90 to 60 seconds costs <em>every</em> responder a live offer they'd already won. Separately, a scoring rule lets a responder's acceptance score sink to the floor with no way back — the only way to earn score is accepting an offer, and once ranked low enough, a responder stops being offered one at all.</p>
+    <p class="ov-text">Acceptance rate cratered 78.5% → 54.2% the week it shipped and has only partly recovered since; callout tickets ran at roughly triple normal volume, without tapering, from release through early September.</p>
+  </div>
+
+  <div class="card">
+    <div class="ov-label">What we're proposing, and why</div>
+    <p class="ov-text">Two different fixes for two different failures — not one "revert":</p>
+    <ul class="ov-list">
+      <li><strong>Timeout —</strong> put the offer window back to a length that matches how long it actually takes to notice a phone and answer it.</li>
+      <li><strong>Starvation —</strong> reset the four responders already stuck at the floor now; let a quiet stretch fade back toward neutral once a responder has stopped receiving offers entirely; back that fade with a guarantee that nobody goes indefinitely without at least one turn.</li>
+    </ul>
+    <p class="ov-text">The fade is the exact question Wen left open next to the routing code in 2019 — she held off because a stretch where someone's still being reached and still declining shouldn't quietly get erased. Tying the fade to "stopped receiving offers entirely," not just time passing, is what makes it safe to finally build. This isn't the one-line fix engineering could ship this afternoon — that would clear today's four names without closing the hole that put them there.</p>
+  </div>
+
+  <div class="card">
+    <div class="ov-label">Decisions needed from Helen</div>
+    <ol class="ov-list">
+      <li>Sign off on the <em>direction</em> — not the specific numbers, which still need Marcus and Wen.</li>
+      <li>If it's a go: Marcus scopes the engineering work, Wen owns the routing design itself — it's her code, and this answers the question she left open in it.</li>
+      <li>Timing — config ships inside a release with no runtime flag, so this needs either an out-of-cycle point release or the mid-September monthly train.</li>
+    </ol>
+  </div>
+
+  <button id="btn-goto-proto" class="cta-button">See it on Kip's console →</button>
+</section>
+
+<section id="view-prototype" style="display:none;">
+  <button class="back-link" id="back-to-overview">← Back to overview</button>
+  <div class="page-title">My responders</div>
+  <div class="page-sub">Where Kip would actually see this — his own roster, no separate report to go check.</div>
+
+  <div class="toggle-row">
+    <span class="toggle-label">Viewing</span>
+    <div class="toggle">
+      <button id="btn-today" class="active">Today</button>
+      <button id="btn-after">Once this ships</button>
+    </div>
+    <span class="ship-note"><span class="dot" id="ship-dot"></span><span id="ship-text"></span></span>
+  </div>
+
+  <!-- Meteor Mite -->
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="responder-name">Meteor Mite</div>
+        <div class="tags"><span>structural-entry</span><span>cold-weather</span></div>
+      </div>
+      <div class="status-pill quiet" id="pill-mite">Stuck — needs the fix</div>
+    </div>
+
+    <div class="banner warn" id="banner-mite">
+      <span class="banner-icon">⚠</span>
+      <span class="banner-text" id="banner-text-mite"><b>Score has been at the floor for weeks, with no offers coming in.</b> Under today's rules that doesn't recover on its own — this is exactly the case the proposed fix is built to catch.</span>
+    </div>
+
+    <div class="score-row">
+      <span class="score-label">Acceptance standing</span>
+      <div class="score-gauge"><div class="score-fill quiet" id="fill-mite" style="width:10%;"></div></div>
+      <span class="score-value" id="scoreval-mite">0.10</span>
+      <span class="score-trend" id="trend-mite">↓ flat at floor</span>
+    </div>
+
+    <div class="status-line" id="status-mite">No callout offers in 5 weeks.</div>
+    <div class="chart" id="chart-mite"></div>
+    <div class="legend" id="legend-mite" style="display:none;">
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--bar-actual);"></div>actual</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:repeating-linear-gradient(135deg,var(--bar-projected),var(--bar-projected) 3px,rgba(79,209,165,0.55) 3px,rgba(79,209,165,0.55) 6px);"></div>projected, if this ships</div>
+    </div>
+
+    <button class="detail-toggle" id="toggle-detail-mite">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class="detail-panel" id="detail-mite">
+      <div class="detail-caption">Day by day, calls received and how each one went — the stretch where this actually happened. Today's console has nothing like this view; it's reconstructed here from the callout data.</div>
+      <div class="day-strip" id="daystrip-mite"></div>
+      <div class="day-legend">
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--good);"></div>accepted</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--risk);"></div>declined</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--quiet);"></div>timed out</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
+      </div>
+      <div class="marker-note" id="marker-note-mite">▲ Aug 18 — where an early warning would have fired, six days before it went fully silent.</div>
+    </div>
+  </div>
+
+  <!-- The Gale -->
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="responder-name">The Gale</div>
+        <div class="tags"><span>flight</span><span>aquatic</span></div>
+      </div>
+      <div class="status-pill good" id="pill-gale">Steady</div>
+    </div>
+
+    <div class="score-row">
+      <span class="score-label">Acceptance standing</span>
+      <div class="score-gauge"><div class="score-fill" id="fill-gale" style="width:96%;"></div></div>
+      <span class="score-value" id="scoreval-gale">0.96</span>
+      <span class="score-trend" id="trend-gale">→ steady</span>
+    </div>
+
+    <div class="status-line" id="status-gale">Regular callout activity, no change either way.</div>
+    <div class="chart" id="chart-gale"></div>
+
+    <button class="detail-toggle" id="toggle-detail-gale">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class="detail-panel" id="detail-gale">
+      <div class="detail-caption">Same stretch, for contrast — steady calls and answers the whole way through.</div>
+      <div class="day-strip" id="daystrip-gale"></div>
+      <div class="day-legend">
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--good);"></div>accepted</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--risk);"></div>declined</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  Prototype for review, not live data — built from the brief on Dispatch 4.2's two failure modes.
+  Weekly numbers are illustrative: Meteor Mite's history matches the real starvation pattern in the callout data;
+  the "once this ships" weeks are a projection of what the reset + decay + backup guarantee would produce, not a promise of exact numbers.
+  Daily detail and the acceptance score use the same formula as the routing code: +0.08 on an accept, −0.12 on a decline or timeout, floor 0, ceiling 1, starting neutral at 0.5.
+</footer>
+
+<script>
+  const weeksPast = ["Jul 27","Aug 3","Aug 10","Aug 17","Aug 24","Aug 31","Sep 7","Sep 14","Sep 21"];
+  const weeksFuture = ["Sep 28","Oct 5","Oct 12","Oct 19"];
+
+  const data = {
+    mite: {
+      past: [5,4,5,1,0,0,0,0,0],
+      future: [2,3,4,5]
+    },
+    gale: {
+      past: [6,7,6,7,8,7,8,9,8],
+      future: [8,9,8,9]
+    }
+  };
+
+  const maxScale = 10;
+
+  // --- Daily detail: same scoring rule as history.py / config.py ---
+  const ACCEPT_CREDIT = 0.08;
+  const MISS_PENALTY = 0.12;
+  const SCORE_FLOOR = 0.0;
+  const SCORE_CEILING = 1.0;
+  const RISK_THRESHOLD = 0.35;
+
+  const dayLabels = ["Aug 10","Aug 11","Aug 12","Aug 13","Aug 14","Aug 15","Aug 16","Aug 17",
+    "Aug 18","Aug 19","Aug 20","Aug 21","Aug 22","Aug 23","Aug 24","Aug 25","Aug 26","Aug 27",
+    "Aug 28","Aug 29","Aug 30","Aug 31"];
+
+  // N = no call that day, A = accepted, D = declined, T = timed out
+  const dailySeq = {
+    mite: ["N","A","N","D","N","T","N","N","D","N","T","N","D","N","N","N","N","N","N","N","N","N"],
+    gale: ["A","N","A","D","N","A","N","A","A","N","A","D","N","A","A","N","N","A","N","D","A","N"]
+  };
+  const startScore = { mite: 0.62, gale: 0.68 };
+
+  function scoreSeries(start, seq){
+    let s = start;
+    return seq.map(o => {
+      if (o === "A") s += ACCEPT_CREDIT;
+      else if (o === "D" || o === "T") s -= MISS_PENALTY;
+      s = Math.max(SCORE_FLOOR, Math.min(SCORE_CEILING, s));
+      return s;
+    });
+  }
+
+  const dailyScores = {
+    mite: scoreSeries(startScore.mite, dailySeq.mite),
+    gale: scoreSeries(startScore.gale, dailySeq.gale)
+  };
+
+  function scoreTier(score){
+    if (score < 0.20) return "quiet";
+    if (score < 0.50) return "risk";
+    return "good";
+  }
+
+  function buildDayStrip(containerId, seq, scores, markerIndex){
+    const el = document.getElementById(containerId);
+    el.innerHTML = "";
+    const outcomeClass = { N: "none", A: "accept", D: "decline", T: "timeout" };
+    const outcomeWord = { N: "no call", A: "accepted", D: "declined", T: "timed out" };
+    seq.forEach((o, i) => {
+      const cell = document.createElement("div");
+      cell.className = "day-cell " + outcomeClass[o];
+      if (i === markerIndex) cell.classList.add("marker");
+      cell.title = dayLabels[i] + " — " + outcomeWord[o] + " · score " + scores[i].toFixed(2);
+      el.appendChild(cell);
+    });
+  }
+
+  function firstRiskCrossing(scores){
+    for (let i = 0; i < scores.length; i++){
+      if (scores[i] < RISK_THRESHOLD) return i;
+    }
+    return -1;
+  }
+
+  function initDailyDetail(){
+    const miteMarker = firstRiskCrossing(dailyScores.mite);
+    buildDayStrip("daystrip-mite", dailySeq.mite, dailyScores.mite, miteMarker);
+    buildDayStrip("daystrip-gale", dailySeq.gale, dailyScores.gale, -1);
+
+    const note = document.getElementById("marker-note-mite");
+    if (miteMarker >= 0){
+      note.textContent = "▲ " + dayLabels[miteMarker] + " — where an early warning would have fired, days before it went fully silent.";
+    } else {
+      note.style.display = "none";
+    }
+  }
+
+  function setupDetailToggle(btnId, panelId){
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    btn.addEventListener("click", () => {
+      const open = panel.classList.toggle("open");
+      btn.textContent = btn.textContent.replace(open ? "▸" : "▾", open ? "▾" : "▸");
+    });
+  }
+
+  function buildChart(containerId, weeks, values, opts){
+    const el = document.getElementById(containerId);
+    el.innerHTML = "";
+    weeks.forEach((wk, i) => {
+      const col = document.createElement("div");
+      col.className = "bar-col";
+
+      if (opts.dividerAt === i){
+        const div = document.createElement("div");
+        div.className = "divider";
+        const tag = document.createElement("div");
+        tag.className = "divider-tag";
+        tag.textContent = "if shipped →";
+        div.appendChild(tag);
+        col.appendChild(div);
+      }
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      if (opts.quietBars) bar.classList.add("quiet");
+      if (i >= (opts.dividerAt ?? Infinity)) bar.classList.add("projected");
+
+      const label = document.createElement("div");
+      label.className = "week-label";
+      label.textContent = wk;
+
+      col.appendChild(bar);
+      col.appendChild(label);
+      el.appendChild(col);
+
+      const targetHeight = Math.max(2, (values[i] / maxScale) * 100) + "%";
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          bar.style.height = targetHeight;
+          if (bar.classList.contains("projected")) {
+            setTimeout(() => bar.classList.add("in"), 20);
+          }
+        }, 30 + i * 25);
+      });
+      bar.title = wk + ": " + values[i] + " callout offer" + (values[i]===1 ? "" : "s");
+    });
+  }
+
+  function render(state){
+    const isAfter = state === "after";
+
+    document.getElementById("btn-today").classList.toggle("active", !isAfter);
+    document.getElementById("btn-after").classList.toggle("active", isAfter);
+    document.getElementById("ship-dot").classList.toggle("show", isAfter);
+    document.getElementById("ship-text").textContent = isAfter
+      ? "reset applied · decay + backup guarantee active"
+      : "";
+    document.getElementById("legend-mite").style.display = isAfter ? "flex" : "none";
+
+    // Meteor Mite
+    const miteWeeks = isAfter ? weeksPast.concat(weeksFuture) : weeksPast;
+    const miteValues = isAfter ? data.mite.past.concat(data.mite.future) : data.mite.past;
+    buildChart("chart-mite", miteWeeks, miteValues, {
+      quietBars: true,
+      dividerAt: isAfter ? weeksPast.length : null
+    });
+
+    const pillMite = document.getElementById("pill-mite");
+    const statusMite = document.getElementById("status-mite");
+    const bannerMite = document.getElementById("banner-mite");
+    const bannerTextMite = document.getElementById("banner-text-mite");
+    const fillMite = document.getElementById("fill-mite");
+    const scorevalMite = document.getElementById("scoreval-mite");
+    const trendMite = document.getElementById("trend-mite");
+
+    const miteScoreNow = isAfter ? 0.74 : dailyScores.mite[dailyScores.mite.length - 1];
+    const miteTier = scoreTier(miteScoreNow);
+
+    if (isAfter){
+      pillMite.textContent = "Recovering";
+      pillMite.className = "status-pill good";
+      statusMite.textContent = "Reset to neutral on rollout, then picking back up on its own — no request needed.";
+      bannerMite.className = "banner ok";
+      bannerTextMite.innerHTML = "<b>Reset applied, and recovering on its own.</b> Decay and the backup guarantee are doing the work now — nobody had to notice or ask.";
+      trendMite.textContent = "↑ climbing back";
+    } else {
+      pillMite.textContent = "Stuck — needs the fix";
+      pillMite.className = "status-pill quiet";
+      statusMite.textContent = "No callout offers in 5 weeks.";
+      bannerMite.className = "banner warn";
+      bannerTextMite.innerHTML = "<b>Score has been at the floor for weeks, with no calls coming in.</b> Under today's rules that doesn't recover on its own — this is exactly the case the proposed fix is built to catch.";
+      trendMite.textContent = "↓ flat at floor";
+    }
+    fillMite.style.width = Math.round(miteScoreNow * 100) + "%";
+    fillMite.className = "score-fill " + (miteTier === "good" ? "" : miteTier);
+    scorevalMite.textContent = miteScoreNow.toFixed(2);
+
+    // The Gale
+    const galeWeeks = isAfter ? weeksPast.concat(weeksFuture) : weeksPast;
+    const galeValues = isAfter ? data.gale.past.concat(data.gale.future) : data.gale.past;
+    buildChart("chart-gale", galeWeeks, galeValues, {
+      quietBars: false,
+      dividerAt: isAfter ? weeksPast.length : null
+    });
+
+    document.getElementById("status-gale").textContent = "Regular callout activity, no change either way.";
+
+    const galeScoreNow = dailyScores.gale[dailyScores.gale.length - 1];
+    document.getElementById("fill-gale").style.width = Math.round(galeScoreNow * 100) + "%";
+    document.getElementById("scoreval-gale").textContent = galeScoreNow.toFixed(2);
+    document.getElementById("trend-gale").textContent = "→ steady";
+  }
+
+  document.getElementById("btn-today").addEventListener("click", () => render("today"));
+  document.getElementById("btn-after").addEventListener("click", () => render("after"));
+
+  initDailyDetail();
+  setupDetailToggle("toggle-detail-mite", "detail-mite");
+  setupDetailToggle("toggle-detail-gale", "detail-gale");
+
+  render("today");
+
+  function showTab(tab){
+    const isProto = tab === "prototype";
+    document.getElementById("view-overview").style.display = isProto ? "none" : "block";
+    document.getElementById("view-prototype").style.display = isProto ? "block" : "none";
+    document.getElementById("tab-overview").classList.toggle("active", !isProto);
+    document.getElementById("tab-prototype").classList.toggle("active", isProto);
+  }
+
+  document.getElementById("tab-overview").addEventListener("click", () => showTab("overview"));
+  document.getElementById("tab-prototype").addEventListener("click", () => showTab("prototype"));
+  document.getElementById("btn-goto-proto").addEventListener("click", () => showTab("prototype"));
+  document.getElementById("back-to-overview").addEventListener("click", () => showTab("overview"));
+</script>
+
+</body>
+</html>
