@@ -339,6 +339,37 @@ capability tags — "nobody could go," distinct from low acceptance).
   entries, verbatim) as the running prompt-library exercise for the
   course.
 
+### What we worked out (session 7 · 24 Sep 2026)
+
+- **Built a `review-checklist` skill** at `.claude/skills/review-checklist/SKILL.md`
+  — Valerie's pre-circulation check for any brief: (1) problem before fix,
+  (2) user personas, (3) agreed implementation plan, (4) rollout /
+  notification plan. Pass / Partial / Missing with evidence, then a fix list.
+  Project-scoped, so it only works in this directory. **Open ambiguity:** on
+  check 4, Valerie wrote "rollout *or* notification," but the skill asks for
+  release vehicle + timing too. On check 3, the skill accepts "names who still
+  needs to sign off," which may be looser than she means by "agreed." Ask
+  before tightening either one.
+- **`05-super-speed/brief-v2.md`** is the checklist-passing rewrite of
+  `brief.md`. It adds the timeout revert (60→90s) as move 1, and phases A
+  (timeout, out-of-cycle point release) → B (reset the four starved responders,
+  same day, never before A, or they re-starve at 60s) → C (decay +
+  guaranteed turn, next monthly train). Success is measured per responder
+  via Ravi. No approvals are recorded yet; the timings and the in-app responder
+  notice are unconfirmed guesses, and Farlight's and The Undertow's handlers
+  are unnamed.
+- **Reviewed the 4 briefs in `06-sidekicks/briefs/`.** None passes; all four
+  miss rollout/notification. Flags outside the checklist: Bulk Callout (Jan)
+  and Handler Phone App (Aug) are dated *before* the Sep interviews they cite.
+  Approval Chains adds a second approval step even though Halloran's actual
+  complaint is that approvals are too slow. Handler Phone App calls itself a
+  Dispatch app, but the roadmap lists a "Supply handler phone app."
+- **Weekly brief review is scheduled** as a *desktop* scheduled task
+  (`weekly-brief-review`, Mondays ~9:11 AM). It only runs while the app is open,
+  and its task file lives outside this directory. Valerie wanted it to run
+  offline. A cloud routine would, but only sees what's pushed to GitHub.
+  Undecided whether to switch.
+
 ### Vocabulary quick-reference
 
 **Responder** (independent field operator, not staff) · **Handler** (manages a
