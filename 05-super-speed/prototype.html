@@ -23,6 +23,8 @@
     --bar-projected:#4fd1a5;
     --risk:#e0a23a;
     --risk-bg:rgba(224,162,58,0.12);
+    --recover:#4fa8d1;
+    --recover-bg:rgba(79,168,209,0.12);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   *{ box-sizing: border-box; }
@@ -61,79 +63,6 @@
     display:flex;align-items:center;justify-content:center;
     font-weight:700;font-size:13px;color:white;
   }
-  .top-nav{
-    max-width:900px;
-    margin:0 auto;
-    padding:18px 24px 0;
-    display:flex;
-    gap:22px;
-    border-bottom: 1px solid var(--border);
-  }
-  .top-nav button{
-    appearance:none;
-    border:none;
-    background:transparent;
-    color: var(--text-dim);
-    font-size:13.5px;
-    font-weight:600;
-    padding:0 2px 12px;
-    cursor:pointer;
-    border-bottom:2px solid transparent;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-  .top-nav button.active{ color: var(--text); border-color: var(--accent); }
-  .top-nav button:not(.active):hover{ color: var(--text); }
-  .back-link{
-    display:inline-block;
-    margin-bottom:16px;
-    font-size:13px;
-    color: var(--text-dim);
-    cursor:pointer;
-    background:none;
-    border:none;
-    padding:0;
-  }
-  .back-link:hover{ color: var(--text); }
-  .ov-label{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    color: var(--text-dimmer);
-    margin-bottom:10px;
-    font-weight:700;
-  }
-  .ov-text{
-    font-size:14px;
-    color: var(--text-dim);
-    line-height:1.6;
-    margin:0 0 10px;
-  }
-  .ov-text:last-child{ margin-bottom:0; }
-  .ov-list{
-    margin:0 0 10px;
-    padding-left:20px;
-    font-size:14px;
-    color: var(--text-dim);
-    line-height:1.6;
-  }
-  .ov-list li{ margin-bottom:8px; }
-  .ov-list li:last-child{ margin-bottom:0; }
-  .cta-button{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background: var(--accent);
-    color:white;
-    border:none;
-    font-size:14px;
-    font-weight:600;
-    padding:12px 18px;
-    border-radius:10px;
-    cursor:pointer;
-    margin-top:8px;
-    transition: background 0.2s ease;
-  }
-  .cta-button:hover{ background:#4a78e0; }
   main{
     max-width: 900px;
     margin: 0 auto;
@@ -147,7 +76,13 @@
   .page-sub{
     color: var(--text-dim);
     font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .page-note{
+    color: var(--text-dimmer);
+    font-size: 12.5px;
     margin-bottom: 22px;
+    line-height: 1.5;
   }
   .toggle-row{
     display:flex;
@@ -248,6 +183,7 @@
   .status-pill.quiet{ background: var(--quiet-bg); color: var(--quiet); }
   .status-pill.good{ background: var(--good-bg); color: var(--good); }
   .status-pill.risk{ background: var(--risk-bg); color: var(--risk); }
+  .status-pill.recover{ background: var(--recover-bg); color: var(--recover); }
 
   .score-row{
     display:flex;
@@ -278,6 +214,7 @@
   }
   .score-fill.risk{ background: var(--risk); }
   .score-fill.quiet{ background: var(--quiet); }
+  .score-fill.recover{ background: var(--recover); }
   .score-value{
     font-size:13px;
     font-weight:700;
@@ -302,8 +239,9 @@
     margin-bottom:16px;
     transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
-  .banner.warn{ background: var(--quiet-bg); color: var(--quiet); border:1px solid rgba(224,99,122,0.3); }
-  .banner.ok{ background: var(--good-bg); color: var(--good); border:1px solid rgba(79,209,165,0.3); }
+  .banner.predict{ background: var(--risk-bg); color: var(--risk); border:1px solid rgba(224,162,58,0.3); }
+  .banner.critical{ background: var(--quiet-bg); color: var(--quiet); border:1px solid rgba(224,99,122,0.3); }
+  .banner.recovering{ background: var(--recover-bg); color: var(--recover); border:1px solid rgba(79,168,209,0.3); }
   .banner-icon{ font-size:15px; line-height:1.2; }
   .banner-text{ color: var(--text-dim); }
   .banner-text b{ color: inherit; }
@@ -316,7 +254,6 @@
     font-weight:600;
     cursor:pointer;
     padding:8px 0 0;
-    display:inline-flex;
     align-items:center;
     gap:5px;
   }
@@ -411,50 +348,12 @@
     height: 2px;
   }
   .bar.quiet{ background: var(--bar-actual-quiet); }
-  .bar.projected{
-    background: repeating-linear-gradient(
-      135deg,
-      var(--bar-projected),
-      var(--bar-projected) 4px,
-      rgba(79,209,165,0.55) 4px,
-      rgba(79,209,165,0.55) 8px
-    );
-    opacity: 0;
-  }
-  .bar.projected.in{ opacity:1; }
   .week-label{
     font-size: 10px;
     color: var(--text-dimmer);
     margin-top: 6px;
     white-space:nowrap;
   }
-  .divider{
-    position:absolute;
-    left:-3px;
-    top:-10px;
-    bottom:22px;
-    width:1px;
-    background: var(--border);
-  }
-  .divider-tag{
-    position:absolute;
-    top:-26px;
-    left:-40px;
-    font-size:9.5px;
-    color: var(--text-dimmer);
-    white-space:nowrap;
-    letter-spacing:0.03em;
-  }
-
-  .legend{
-    display:flex;
-    gap:18px;
-    margin-top:14px;
-    font-size:12px;
-    color: var(--text-dimmer);
-  }
-  .legend-item{ display:flex; align-items:center; gap:6px; }
-  .legend-swatch{ width:12px;height:8px;border-radius:2px; }
 
   footer{
     max-width:900px;
@@ -481,89 +380,125 @@
   </div>
 </header>
 
-<nav class="top-nav">
-  <button id="tab-overview" class="active">Overview</button>
-  <button id="tab-prototype">Prototype: Kip's console</button>
-</nav>
-
 <main>
-
-<section id="view-overview">
-  <div class="page-title">Dispatch 4.2 — quiet responders, in brief</div>
-  <div class="page-sub">The short version, before you get to the console screen itself.</div>
-
-  <div class="card">
-    <div class="ov-label">The issue</div>
-    <p class="ov-text">4.2 (shipped 12 Aug) broke two independent things at once. A callout offer timeout cut from 90 to 60 seconds costs <em>every</em> responder a live offer they'd already won. Separately, a scoring rule lets a responder's acceptance score sink to the floor with no way back — the only way to earn score is accepting an offer, and once ranked low enough, a responder stops being offered one at all.</p>
-    <p class="ov-text">Acceptance rate cratered 78.5% → 54.2% the week it shipped and has only partly recovered since; callout tickets ran at roughly triple normal volume, without tapering, from release through early September.</p>
-  </div>
-
-  <div class="card">
-    <div class="ov-label">What we're proposing, and why</div>
-    <p class="ov-text">Two different fixes for two different failures — not one "revert":</p>
-    <ul class="ov-list">
-      <li><strong>Timeout —</strong> put the offer window back to a length that matches how long it actually takes to notice a phone and answer it.</li>
-      <li><strong>Starvation —</strong> reset the four responders already stuck at the floor now; let a quiet stretch fade back toward neutral once a responder has stopped receiving offers entirely; back that fade with a guarantee that nobody goes indefinitely without at least one turn.</li>
-    </ul>
-    <p class="ov-text">The fade is the exact question Wen left open next to the routing code in 2019 — she held off because a stretch where someone's still being reached and still declining shouldn't quietly get erased. Tying the fade to "stopped receiving offers entirely," not just time passing, is what makes it safe to finally build. This isn't the one-line fix engineering could ship this afternoon — that would clear today's four names without closing the hole that put them there.</p>
-  </div>
-
-  <div class="card">
-    <div class="ov-label">Decisions needed from Helen</div>
-    <ol class="ov-list">
-      <li>Sign off on the <em>direction</em> — not the specific numbers, which still need Marcus and Wen.</li>
-      <li>If it's a go: Marcus scopes the engineering work, Wen owns the routing design itself — it's her code, and this answers the question she left open in it.</li>
-      <li>Timing — config ships inside a release with no runtime flag, so this needs either an out-of-cycle point release or the mid-September monthly train.</li>
-    </ol>
-  </div>
-
-  <button id="btn-goto-proto" class="cta-button">See it on Kip's console →</button>
-</section>
-
-<section id="view-prototype" style="display:none;">
-  <button class="back-link" id="back-to-overview">← Back to overview</button>
   <div class="page-title">My responders</div>
   <div class="page-sub">Where Kip would actually see this — his own roster, no separate report to go check.</div>
+  <div class="page-note">Kip actually manages two of these — Meteor Mite and The Gale. Thornwatch and Halyard are added here, not really his, so all four statuses below have a live example on screen at once.</div>
 
   <div class="toggle-row">
     <span class="toggle-label">Viewing</span>
     <div class="toggle">
-      <button id="btn-today" class="active">Today</button>
-      <button id="btn-after">Once this ships</button>
+      <button id="btn-current" class="active">Current View</button>
+      <button id="btn-improved">Improved View</button>
     </div>
     <span class="ship-note"><span class="dot" id="ship-dot"></span><span id="ship-text"></span></span>
   </div>
 
-  <!-- Meteor Mite -->
+  <div id="roster">
+
+  <!-- The Gale — Steady -->
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="responder-name">The Gale</div>
+        <div class="tags"><span>flight</span><span>aquatic</span></div>
+      </div>
+      <div class="status-pill good" id="pill-gale" style="display:none;">Steady</div>
+    </div>
+
+    <div class="banner" id="banner-gale" style="display:none;">
+      <span class="banner-icon" id="banner-icon-gale">⚠</span>
+      <span class="banner-text" id="banner-text-gale"></span>
+    </div>
+
+    <div class="score-row" id="score-row-gale" style="display:none;">
+      <span class="score-label">Acceptance standing</span>
+      <div class="score-gauge"><div class="score-fill" id="fill-gale" style="width:96%;"></div></div>
+      <span class="score-value" id="scoreval-gale">0.96</span>
+      <span class="score-trend" id="trend-gale">→ steady</span>
+    </div>
+
+    <div class="status-line" id="status-gale">8 calls this week.</div>
+    <div class="chart" id="chart-gale"></div>
+
+    <button class="detail-toggle" id="toggle-detail-gale" style="display:none;">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class="detail-panel" id="detail-gale">
+      <div class="detail-caption">Steady calls and answers the whole way through — the baseline everything else here is contrasted against.</div>
+      <div class="day-strip" id="daystrip-gale"></div>
+      <div class="day-legend">
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--good);"></div>accepted</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--risk);"></div>declined</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
+      </div>
+      <div class="marker-note" id="marker-note-gale"></div>
+    </div>
+  </div>
+
+  <!-- Thornwatch — Predicted decline -->
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="responder-name">Thornwatch</div>
+        <div class="tags"><span>hazmat-tolerant</span><span>crowd-management</span></div>
+      </div>
+      <div class="status-pill risk" id="pill-thornwatch" style="display:none;">Declining</div>
+    </div>
+
+    <div class="banner" id="banner-thornwatch" style="display:none;">
+      <span class="banner-icon" id="banner-icon-thornwatch">⚠</span>
+      <span class="banner-text" id="banner-text-thornwatch"></span>
+    </div>
+
+    <div class="score-row" id="score-row-thornwatch" style="display:none;">
+      <span class="score-label">Acceptance standing</span>
+      <div class="score-gauge"><div class="score-fill" id="fill-thornwatch" style="width:60%;"></div></div>
+      <span class="score-value" id="scoreval-thornwatch">0.60</span>
+      <span class="score-trend" id="trend-thornwatch">↘ trending down</span>
+    </div>
+
+    <div class="status-line" id="status-thornwatch">2 calls this week.</div>
+    <div class="chart" id="chart-thornwatch"></div>
+
+    <button class="detail-toggle" id="toggle-detail-thornwatch" style="display:none;">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class="detail-panel" id="detail-thornwatch">
+      <div class="detail-caption">Still above neutral, but a string of misses starting mid-August has it trending the wrong way — the kind of pattern that's invisible today and easy to miss once it starts.</div>
+      <div class="day-strip" id="daystrip-thornwatch"></div>
+      <div class="day-legend">
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--good);"></div>accepted</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--risk);"></div>declined</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--quiet);"></div>timed out</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
+      </div>
+      <div class="marker-note" id="marker-note-thornwatch"></div>
+    </div>
+  </div>
+
+  <!-- Meteor Mite — Below neutral / critical -->
   <div class="card">
     <div class="card-top">
       <div>
         <div class="responder-name">Meteor Mite</div>
         <div class="tags"><span>structural-entry</span><span>cold-weather</span></div>
       </div>
-      <div class="status-pill quiet" id="pill-mite">Stuck — needs the fix</div>
+      <div class="status-pill quiet" id="pill-mite" style="display:none;">Stuck — needs the fix</div>
     </div>
 
-    <div class="banner warn" id="banner-mite">
-      <span class="banner-icon">⚠</span>
-      <span class="banner-text" id="banner-text-mite"><b>Score has been at the floor for weeks, with no offers coming in.</b> Under today's rules that doesn't recover on its own — this is exactly the case the proposed fix is built to catch.</span>
+    <div class="banner" id="banner-mite" style="display:none;">
+      <span class="banner-icon" id="banner-icon-mite">⚠</span>
+      <span class="banner-text" id="banner-text-mite"></span>
     </div>
 
-    <div class="score-row">
+    <div class="score-row" id="score-row-mite" style="display:none;">
       <span class="score-label">Acceptance standing</span>
       <div class="score-gauge"><div class="score-fill quiet" id="fill-mite" style="width:10%;"></div></div>
       <span class="score-value" id="scoreval-mite">0.10</span>
       <span class="score-trend" id="trend-mite">↓ flat at floor</span>
     </div>
 
-    <div class="status-line" id="status-mite">No callout offers in 5 weeks.</div>
+    <div class="status-line" id="status-mite">0 calls this week.</div>
     <div class="chart" id="chart-mite"></div>
-    <div class="legend" id="legend-mite" style="display:none;">
-      <div class="legend-item"><div class="legend-swatch" style="background:var(--bar-actual);"></div>actual</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:repeating-linear-gradient(135deg,var(--bar-projected),var(--bar-projected) 3px,rgba(79,209,165,0.55) 3px,rgba(79,209,165,0.55) 6px);"></div>projected, if this ships</div>
-    </div>
 
-    <button class="detail-toggle" id="toggle-detail-mite">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <button class="detail-toggle" id="toggle-detail-mite" style="display:none;">▸ Show daily detail — Aug 10 to Aug 31</button>
     <div class="detail-panel" id="detail-mite">
       <div class="detail-caption">Day by day, calls received and how each one went — the stretch where this actually happened. Today's console has nothing like this view; it's reconstructed here from the callout data.</div>
       <div class="day-strip" id="daystrip-mite"></div>
@@ -573,76 +508,109 @@
         <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--quiet);"></div>timed out</div>
         <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
       </div>
-      <div class="marker-note" id="marker-note-mite">▲ Aug 18 — where an early warning would have fired, six days before it went fully silent.</div>
+      <div class="marker-note" id="marker-note-mite"></div>
     </div>
   </div>
 
-  <!-- The Gale -->
+  <!-- Halyard — Recovering -->
   <div class="card">
     <div class="card-top">
       <div>
-        <div class="responder-name">The Gale</div>
-        <div class="tags"><span>flight</span><span>aquatic</span></div>
+        <div class="responder-name">Halyard</div>
+        <div class="tags"><span>de-escalation</span><span>aquatic</span></div>
       </div>
-      <div class="status-pill good" id="pill-gale">Steady</div>
+      <div class="status-pill recover" id="pill-halyard" style="display:none;">Recovering</div>
     </div>
 
-    <div class="score-row">
+    <div class="banner" id="banner-halyard" style="display:none;">
+      <span class="banner-icon" id="banner-icon-halyard">↻</span>
+      <span class="banner-text" id="banner-text-halyard"></span>
+    </div>
+
+    <div class="score-row" id="score-row-halyard" style="display:none;">
       <span class="score-label">Acceptance standing</span>
-      <div class="score-gauge"><div class="score-fill" id="fill-gale" style="width:96%;"></div></div>
-      <span class="score-value" id="scoreval-gale">0.96</span>
-      <span class="score-trend" id="trend-gale">→ steady</span>
+      <div class="score-gauge"><div class="score-fill recover" id="fill-halyard" style="width:62%;"></div></div>
+      <span class="score-value" id="scoreval-halyard">0.62</span>
+      <span class="score-trend" id="trend-halyard">↗ improving</span>
     </div>
 
-    <div class="status-line" id="status-gale">Regular callout activity, no change either way.</div>
-    <div class="chart" id="chart-gale"></div>
+    <div class="status-line" id="status-halyard">4 calls this week.</div>
+    <div class="chart" id="chart-halyard"></div>
 
-    <button class="detail-toggle" id="toggle-detail-gale">▸ Show daily detail — Aug 10 to Aug 31</button>
-    <div class="detail-panel" id="detail-gale">
-      <div class="detail-caption">Same stretch, for contrast — steady calls and answers the whole way through.</div>
-      <div class="day-strip" id="daystrip-gale"></div>
+    <button class="detail-toggle" id="toggle-detail-halyard" style="display:none;">▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class="detail-panel" id="detail-halyard">
+      <div class="detail-caption">A short critical stretch, then recovery-prioritized calls bring it back — the arc the proposed fix is built to produce, seen end to end.</div>
+      <div class="day-strip" id="daystrip-halyard"></div>
       <div class="day-legend">
         <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--good);"></div>accepted</div>
         <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--risk);"></div>declined</div>
+        <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--quiet);"></div>timed out</div>
         <div class="day-legend-item"><div class="day-legend-swatch" style="background:var(--panel-2);border:1px solid var(--border);"></div>no call that day</div>
       </div>
+      <div class="marker-note" id="marker-note-halyard"></div>
     </div>
   </div>
 
-</section>
+  </div>
 
 </main>
 
 <footer>
   Prototype for review, not live data — built from the brief on Dispatch 4.2's two failure modes.
-  Weekly numbers are illustrative: Meteor Mite's history matches the real starvation pattern in the callout data;
-  the "once this ships" weeks are a projection of what the reset + decay + backup guarantee would produce, not a promise of exact numbers.
+  Weekly numbers are illustrative and match the real starvation pattern in the callout data; nothing here is a forecast —
+  Current View and Improved View show the same real weeks, the difference is what the console surfaces.
   Daily detail and the acceptance score use the same formula as the routing code: +0.08 on an accept, −0.12 on a decline or timeout, floor 0, ceiling 1, starting neutral at 0.5.
+  Thornwatch and Halyard are added to this roster only to put a live example of all four statuses on screen together — Kip's actual roster is Meteor Mite and The Gale.
 </footer>
 
 <script>
+  const RESPONDER_ORDER = ["gale", "thornwatch", "mite", "halyard"];
+
   const weeksPast = ["Jul 27","Aug 3","Aug 10","Aug 17","Aug 24","Aug 31","Sep 7","Sep 14","Sep 21"];
-  const weeksFuture = ["Sep 28","Oct 5","Oct 12","Oct 19"];
 
   const data = {
-    mite: {
-      past: [5,4,5,1,0,0,0,0,0],
-      future: [2,3,4,5]
-    },
-    gale: {
-      past: [6,7,6,7,8,7,8,9,8],
-      future: [8,9,8,9]
-    }
+    gale:       { past: [6,7,6,7,8,7,8,9,8] },
+    thornwatch: { past: [5,4,5,4,3,3,2,2,2] },
+    mite:       { past: [5,4,5,1,0,0,0,0,0] },
+    halyard:    { past: [5,5,4,2,1,1,2,3,4] }
   };
 
   const maxScale = 10;
+
+  // Per-responder display config: bar color and the sentence Improved View
+  // shows in place of the plain weekly count.
+  const RESPONDER_CONFIG = {
+    gale: {
+      quietBars: false,
+      richLine: "Regular callout activity, no change either way."
+    },
+    thornwatch: {
+      quietBars: true,
+      richLine: "Calls are still coming in, but fewer each week — and the trend's been pointing down since mid-August."
+    },
+    mite: {
+      quietBars: true,
+      richLine: "No callout offers in 5 weeks."
+    },
+    halyard: {
+      quietBars: true,
+      richLine: "Dropped below neutral for about two weeks; been climbing back since Aug 29."
+    }
+  };
 
   // --- Daily detail: same scoring rule as history.py / config.py ---
   const ACCEPT_CREDIT = 0.08;
   const MISS_PENALTY = 0.12;
   const SCORE_FLOOR = 0.0;
   const SCORE_CEILING = 1.0;
-  const RISK_THRESHOLD = 0.35;
+  const NEUTRAL_SCORE = 0.5;
+
+  // How close to neutral (from above) counts as "trending toward it" for the
+  // predictive alert, and how many days above neutral after a critical patch
+  // still count as "recovering" rather than fully "steady" again.
+  const PREDICT_MARGIN = 0.15;
+  const STABILIZE_WINDOW = 5;
+  const RECOVERY_CALL_INTERVAL_DAYS = 3;
 
   const dayLabels = ["Aug 10","Aug 11","Aug 12","Aug 13","Aug 14","Aug 15","Aug 16","Aug 17",
     "Aug 18","Aug 19","Aug 20","Aug 21","Aug 22","Aug 23","Aug 24","Aug 25","Aug 26","Aug 27",
@@ -650,10 +618,12 @@
 
   // N = no call that day, A = accepted, D = declined, T = timed out
   const dailySeq = {
-    mite: ["N","A","N","D","N","T","N","N","D","N","T","N","D","N","N","N","N","N","N","N","N","N"],
-    gale: ["A","N","A","D","N","A","N","A","A","N","A","D","N","A","A","N","N","A","N","D","A","N"]
+    gale:       ["A","N","A","D","N","A","N","A","A","N","A","D","N","A","A","N","N","A","N","D","A","N"],
+    thornwatch: ["N","A","N","A","N","N","A","N","N","D","N","N","D","N","T","N","N","N","N","N","N","N"],
+    mite:       ["N","A","N","D","N","T","N","N","D","N","T","N","D","N","N","N","N","N","N","N","N","N"],
+    halyard:    ["N","D","N","T","N","D","N","N","N","N","N","N","N","N","N","N","A","A","A","A","A","N"]
   };
-  const startScore = { mite: 0.62, gale: 0.68 };
+  const startScore = { gale: 0.68, thornwatch: 0.72, mite: 0.62, halyard: 0.58 };
 
   function scoreSeries(start, seq){
     let s = start;
@@ -665,18 +635,108 @@
     });
   }
 
-  const dailyScores = {
-    mite: scoreSeries(startScore.mite, dailySeq.mite),
-    gale: scoreSeries(startScore.gale, dailySeq.gale)
+  const dailyScores = {};
+  RESPONDER_ORDER.forEach(id => { dailyScores[id] = scoreSeries(startScore[id], dailySeq[id]); });
+
+  // The 4 alert states a responder's day can fall into:
+  //  steady     — healthy, no concern
+  //  predict    — still at/above neutral, but trending down: a prediction,
+  //               flagged before anything is actually wrong
+  //  critical   — dropped below neutral: recovery-prioritized calls kick in
+  //  recovering — back above neutral after a critical patch, not yet steady
+  const STATUS_META = {
+    steady: {
+      label: "Steady",
+      pillClass: "good",
+      fillClass: "",
+      trend: "→ steady",
+      banner: null
+    },
+    predict: {
+      label: "Declining — may drop below neutral",
+      pillClass: "risk",
+      fillClass: "risk",
+      trend: "↘ trending down",
+      banner: {
+        cls: "predict",
+        icon: "⚠",
+        html: "<b>Acceptance score has been slipping for a few days.</b> Flagging it now, before it drops below neutral — nothing to do yet."
+      }
+    },
+    critical: {
+      label: "Below neutral — recovery active",
+      pillClass: "quiet",
+      fillClass: "quiet",
+      trend: "↓ below neutral",
+      banner: {
+        cls: "critical",
+        icon: "⚠",
+        html: "<b>Score dropped below neutral.</b> Now getting 1 recovery-prioritized call every " + RECOVERY_CALL_INTERVAL_DAYS + " days to help restore it — no request needed."
+      }
+    },
+    recovering: {
+      label: "Recovering — stabilizing",
+      pillClass: "recover",
+      fillClass: "recover",
+      trend: "↗ improving",
+      banner: {
+        cls: "recovering",
+        icon: "↻",
+        html: "<b>Back above neutral, but still rebuilding.</b> Recovery-prioritized calls continue until it's fully steady again."
+      }
+    }
   };
 
-  function scoreTier(score){
-    if (score < 0.20) return "quiet";
-    if (score < 0.50) return "risk";
-    return "good";
+  const TRANSITION_NOTE = {
+    predict: "flagged as declining, before it became critical",
+    critical: "crossed below neutral — recovery-prioritized calls begin",
+    recovering: "back above neutral — still stabilizing",
+    steady: "fully steady again"
+  };
+
+  // Classifies each day into one of the 4 states above, using only the
+  // score and the trend of recent outcomes — the same inputs a handler
+  // could actually see.
+  function classifyDaily(scores, seq){
+    let trend = "up";
+    let daysAboveSinceCritical = Infinity;
+    return scores.map((score, i) => {
+      const o = seq[i];
+      if (o === "A") trend = "up";
+      else if (o === "D" || o === "T") trend = "down";
+
+      if (score < NEUTRAL_SCORE){
+        daysAboveSinceCritical = 0;
+        return "critical";
+      }
+      daysAboveSinceCritical += 1;
+      if (daysAboveSinceCritical <= STABILIZE_WINDOW) return "recovering";
+      if (trend === "down" && score < NEUTRAL_SCORE + PREDICT_MARGIN) return "predict";
+      return "steady";
+    });
   }
 
-  function buildDayStrip(containerId, seq, scores, markerIndex){
+  const dailyStatus = {};
+  RESPONDER_ORDER.forEach(id => { dailyStatus[id] = classifyDaily(dailyScores[id], dailySeq[id]); });
+
+  // Improved View sorts by severity: red, orange, blue, green.
+  const STATUS_RANK = { critical: 0, predict: 1, recovering: 2, steady: 3 };
+
+  function sortRoster(isImproved){
+    const roster = document.getElementById("roster");
+    const order = isImproved
+      ? RESPONDER_ORDER.slice().sort((a, b) => {
+          const sa = dailyStatus[a][dailyStatus[a].length - 1];
+          const sb = dailyStatus[b][dailyStatus[b].length - 1];
+          return STATUS_RANK[sa] - STATUS_RANK[sb];
+        })
+      : RESPONDER_ORDER;
+    order.forEach(id => {
+      roster.appendChild(document.getElementById("pill-" + id).closest(".card"));
+    });
+  }
+
+  function buildDayStrip(containerId, seq, scores, statuses){
     const el = document.getElementById(containerId);
     el.innerHTML = "";
     const outcomeClass = { N: "none", A: "accept", D: "decline", T: "timeout" };
@@ -684,30 +744,52 @@
     seq.forEach((o, i) => {
       const cell = document.createElement("div");
       cell.className = "day-cell " + outcomeClass[o];
-      if (i === markerIndex) cell.classList.add("marker");
-      cell.title = dayLabels[i] + " — " + outcomeWord[o] + " · score " + scores[i].toFixed(2);
+      if (i > 0 && statuses[i] !== statuses[i - 1]) cell.classList.add("marker");
+      cell.title = dayLabels[i] + " — " + outcomeWord[o] + " · score " + scores[i].toFixed(2) +
+        " · " + STATUS_META[statuses[i]].label;
       el.appendChild(cell);
     });
   }
 
-  function firstRiskCrossing(scores){
-    for (let i = 0; i < scores.length; i++){
-      if (scores[i] < RISK_THRESHOLD) return i;
+  function transitionNotes(statuses){
+    const notes = [];
+    for (let i = 1; i < statuses.length; i++){
+      if (statuses[i] !== statuses[i - 1]){
+        notes.push("▲ " + dayLabels[i] + " — " + TRANSITION_NOTE[statuses[i]] + ".");
+      }
     }
-    return -1;
+    return notes;
   }
 
   function initDailyDetail(){
-    const miteMarker = firstRiskCrossing(dailyScores.mite);
-    buildDayStrip("daystrip-mite", dailySeq.mite, dailyScores.mite, miteMarker);
-    buildDayStrip("daystrip-gale", dailySeq.gale, dailyScores.gale, -1);
+    RESPONDER_ORDER.forEach(id => {
+      buildDayStrip("daystrip-" + id, dailySeq[id], dailyScores[id], dailyStatus[id]);
+      const notes = transitionNotes(dailyStatus[id]);
+      document.getElementById("marker-note-" + id).innerHTML = notes.length
+        ? notes.join("<br>")
+        : "No status changes in this stretch.";
+    });
+  }
 
-    const note = document.getElementById("marker-note-mite");
-    if (miteMarker >= 0){
-      note.textContent = "▲ " + dayLabels[miteMarker] + " — where an early warning would have fired, days before it went fully silent.";
+  function applyStatus(id, statusKey, isImproved){
+    const meta = STATUS_META[statusKey];
+    const pill = document.getElementById("pill-" + id);
+    pill.textContent = meta.label;
+    pill.className = "status-pill " + meta.pillClass;
+
+    const banner = document.getElementById("banner-" + id);
+    if (meta.banner){
+      banner.style.display = isImproved ? "flex" : "none";
+      banner.className = "banner " + meta.banner.cls;
+      document.getElementById("banner-icon-" + id).textContent = meta.banner.icon;
+      document.getElementById("banner-text-" + id).innerHTML = meta.banner.html;
     } else {
-      note.style.display = "none";
+      banner.style.display = "none";
     }
+
+    const fill = document.getElementById("fill-" + id);
+    fill.className = "score-fill " + meta.fillClass;
+    document.getElementById("trend-" + id).textContent = meta.trend;
   }
 
   function setupDetailToggle(btnId, panelId){
@@ -719,6 +801,13 @@
     });
   }
 
+  function closeDetail(btnId, panelId){
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    panel.classList.remove("open");
+    btn.textContent = btn.textContent.replace("▾", "▸");
+  }
+
   function buildChart(containerId, weeks, values, opts){
     const el = document.getElementById(containerId);
     el.innerHTML = "";
@@ -726,20 +815,9 @@
       const col = document.createElement("div");
       col.className = "bar-col";
 
-      if (opts.dividerAt === i){
-        const div = document.createElement("div");
-        div.className = "divider";
-        const tag = document.createElement("div");
-        tag.className = "divider-tag";
-        tag.textContent = "if shipped →";
-        div.appendChild(tag);
-        col.appendChild(div);
-      }
-
       const bar = document.createElement("div");
       bar.className = "bar";
       if (opts.quietBars) bar.classList.add("quiet");
-      if (i >= (opts.dividerAt ?? Infinity)) bar.classList.add("projected");
 
       const label = document.createElement("div");
       label.className = "week-label";
@@ -751,103 +829,58 @@
 
       const targetHeight = Math.max(2, (values[i] / maxScale) * 100) + "%";
       requestAnimationFrame(() => {
-        setTimeout(() => {
-          bar.style.height = targetHeight;
-          if (bar.classList.contains("projected")) {
-            setTimeout(() => bar.classList.add("in"), 20);
-          }
-        }, 30 + i * 25);
+        setTimeout(() => { bar.style.height = targetHeight; }, 30 + i * 25);
       });
       bar.title = wk + ": " + values[i] + " callout offer" + (values[i]===1 ? "" : "s");
     });
   }
 
+  // Both views show the exact same real weeks — nothing here is a forecast.
+  // What changes is only which diagnostics the console surfaces.
   function render(state){
-    const isAfter = state === "after";
+    const isImproved = state === "improved";
 
-    document.getElementById("btn-today").classList.toggle("active", !isAfter);
-    document.getElementById("btn-after").classList.toggle("active", isAfter);
-    document.getElementById("ship-dot").classList.toggle("show", isAfter);
-    document.getElementById("ship-text").textContent = isAfter
-      ? "reset applied · decay + backup guarantee active"
+    document.getElementById("btn-current").classList.toggle("active", !isImproved);
+    document.getElementById("btn-improved").classList.toggle("active", isImproved);
+    document.getElementById("ship-dot").classList.toggle("show", isImproved);
+    document.getElementById("ship-text").textContent = isImproved
+      ? "score, trend & early-warning visibility now on"
       : "";
-    document.getElementById("legend-mite").style.display = isAfter ? "flex" : "none";
 
-    // Meteor Mite
-    const miteWeeks = isAfter ? weeksPast.concat(weeksFuture) : weeksPast;
-    const miteValues = isAfter ? data.mite.past.concat(data.mite.future) : data.mite.past;
-    buildChart("chart-mite", miteWeeks, miteValues, {
-      quietBars: true,
-      dividerAt: isAfter ? weeksPast.length : null
+    sortRoster(isImproved);
+
+    RESPONDER_ORDER.forEach(id => {
+      // Show/hide the richer diagnostics that only exist in the improved
+      // view — in the current view, a handler just sees the roster and
+      // the weekly count.
+      document.getElementById("pill-" + id).style.display = isImproved ? "inline-block" : "none";
+      document.getElementById("score-row-" + id).style.display = isImproved ? "flex" : "none";
+      document.getElementById("toggle-detail-" + id).style.display = isImproved ? "inline-flex" : "none";
+      if (!isImproved) closeDetail("toggle-detail-" + id, "detail-" + id);
+
+      // Same real weekly history either way.
+      buildChart("chart-" + id, weeksPast, data[id].past, { quietBars: RESPONDER_CONFIG[id].quietBars });
+
+      const status = dailyStatus[id][dailyStatus[id].length - 1];
+      applyStatus(id, status, isImproved);
+
+      document.getElementById("status-" + id).textContent = isImproved
+        ? RESPONDER_CONFIG[id].richLine
+        : data[id].past[data[id].past.length - 1] + " calls this week.";
+
+      const scoreNow = dailyScores[id][dailyScores[id].length - 1];
+      document.getElementById("fill-" + id).style.width = Math.round(scoreNow * 100) + "%";
+      document.getElementById("scoreval-" + id).textContent = scoreNow.toFixed(2);
     });
-
-    const pillMite = document.getElementById("pill-mite");
-    const statusMite = document.getElementById("status-mite");
-    const bannerMite = document.getElementById("banner-mite");
-    const bannerTextMite = document.getElementById("banner-text-mite");
-    const fillMite = document.getElementById("fill-mite");
-    const scorevalMite = document.getElementById("scoreval-mite");
-    const trendMite = document.getElementById("trend-mite");
-
-    const miteScoreNow = isAfter ? 0.74 : dailyScores.mite[dailyScores.mite.length - 1];
-    const miteTier = scoreTier(miteScoreNow);
-
-    if (isAfter){
-      pillMite.textContent = "Recovering";
-      pillMite.className = "status-pill good";
-      statusMite.textContent = "Reset to neutral on rollout, then picking back up on its own — no request needed.";
-      bannerMite.className = "banner ok";
-      bannerTextMite.innerHTML = "<b>Reset applied, and recovering on its own.</b> Decay and the backup guarantee are doing the work now — nobody had to notice or ask.";
-      trendMite.textContent = "↑ climbing back";
-    } else {
-      pillMite.textContent = "Stuck — needs the fix";
-      pillMite.className = "status-pill quiet";
-      statusMite.textContent = "No callout offers in 5 weeks.";
-      bannerMite.className = "banner warn";
-      bannerTextMite.innerHTML = "<b>Score has been at the floor for weeks, with no calls coming in.</b> Under today's rules that doesn't recover on its own — this is exactly the case the proposed fix is built to catch.";
-      trendMite.textContent = "↓ flat at floor";
-    }
-    fillMite.style.width = Math.round(miteScoreNow * 100) + "%";
-    fillMite.className = "score-fill " + (miteTier === "good" ? "" : miteTier);
-    scorevalMite.textContent = miteScoreNow.toFixed(2);
-
-    // The Gale
-    const galeWeeks = isAfter ? weeksPast.concat(weeksFuture) : weeksPast;
-    const galeValues = isAfter ? data.gale.past.concat(data.gale.future) : data.gale.past;
-    buildChart("chart-gale", galeWeeks, galeValues, {
-      quietBars: false,
-      dividerAt: isAfter ? weeksPast.length : null
-    });
-
-    document.getElementById("status-gale").textContent = "Regular callout activity, no change either way.";
-
-    const galeScoreNow = dailyScores.gale[dailyScores.gale.length - 1];
-    document.getElementById("fill-gale").style.width = Math.round(galeScoreNow * 100) + "%";
-    document.getElementById("scoreval-gale").textContent = galeScoreNow.toFixed(2);
-    document.getElementById("trend-gale").textContent = "→ steady";
   }
 
-  document.getElementById("btn-today").addEventListener("click", () => render("today"));
-  document.getElementById("btn-after").addEventListener("click", () => render("after"));
+  document.getElementById("btn-current").addEventListener("click", () => render("current"));
+  document.getElementById("btn-improved").addEventListener("click", () => render("improved"));
 
   initDailyDetail();
-  setupDetailToggle("toggle-detail-mite", "detail-mite");
-  setupDetailToggle("toggle-detail-gale", "detail-gale");
+  RESPONDER_ORDER.forEach(id => setupDetailToggle("toggle-detail-" + id, "detail-" + id));
 
-  render("today");
-
-  function showTab(tab){
-    const isProto = tab === "prototype";
-    document.getElementById("view-overview").style.display = isProto ? "none" : "block";
-    document.getElementById("view-prototype").style.display = isProto ? "block" : "none";
-    document.getElementById("tab-overview").classList.toggle("active", !isProto);
-    document.getElementById("tab-prototype").classList.toggle("active", isProto);
-  }
-
-  document.getElementById("tab-overview").addEventListener("click", () => showTab("overview"));
-  document.getElementById("tab-prototype").addEventListener("click", () => showTab("prototype"));
-  document.getElementById("btn-goto-proto").addEventListener("click", () => showTab("prototype"));
-  document.getElementById("back-to-overview").addEventListener("click", () => showTab("overview"));
+  render("current");
 </script>
 
 </body>
