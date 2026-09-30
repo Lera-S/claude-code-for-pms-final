@@ -166,7 +166,7 @@
   .phase ul{margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:14px}
   .phase li{margin-bottom:4px}
   .arrow{align-self:center; justify-self:center; color:var(--dim); font-size:22px}
-  @media (max-width:860px){ #phases{grid-template-columns:1fr !important; row-gap:22px} #phases .arrow{transform:rotate(90deg); margin:-10px 0} }
+  @media (max-width:860px){ #phases{row-gap:22px} }
 
   /* checklist mapping */
   .check{display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:start}
@@ -217,16 +217,16 @@
 <!-- 1 · TITLE -->
 <section class="slide title-slide" id="s-title">
   <div class="wrap">
-    <div class="kicker reveal">Rook Dispatch · Final report · 24 Sep 2026</div>
-    <h1 class="reveal d1">Release 4.2 broke the callout<br>in two ways, and <span class="hl-bad">nobody was told</span>.</h1>
-    <p class="lede reveal d2">Six sessions, 88 prompts, one investigation. This report covers what happened, the evidence and the exact question behind each finding, the fix as a clickable console, and the review habit that should stop the next 4.2 before it ships.</p>
+    <div class="kicker reveal">Rook Dispatch · Final report</div>
+    <h1 class="reveal d1">Release 4.2 broke the callout in two ways, and <span class="hl-bad">nobody was told</span>.</h1>
+    <p class="lede reveal d2">Six modules, 88 prompts, one investigation: what happened, the evidence behind it, the fix, and how we stop the next one.</p>
     <div class="grid g4 reveal d3">
-      <div class="card stat"><div class="big hl-bad">54.2%</div><div class="sub">pooled acceptance in release week, down from 77.9% the week before</div></div>
-      <div class="card stat"><div class="big hl-warn">~3×</div><div class="sub">normal callout-ticket volume, ~1/day from 13 Aug to 5 Sep, not tapering</div></div>
-      <div class="card stat"><div class="big hl-bad">4</div><div class="sub">responders starved of offers: Vesper, Meteor Mite, Farlight, The Undertow</div></div>
-      <div class="card stat"><div class="big">0</div><div class="sub">fixes shipped since 12 Aug: no hotfix, point release, or config change</div></div>
+      <div class="card stat"><div class="big hl-bad">54.2%</div><div class="sub">acceptance in release week, from 77.9% the week before</div></div>
+      <div class="card stat"><div class="big hl-warn">~3×</div><div class="sub">normal callout tickets, about one a day, not tapering</div></div>
+      <div class="card stat"><div class="big hl-bad">4</div><div class="sub">responders starved of offers entirely</div></div>
+      <div class="card stat"><div class="big">0</div><div class="sub">fixes shipped since 12 Aug</div></div>
     </div>
-    <p class="foot-note reveal d4">Prepared by Valerie, PM, Rook Dispatch. Scroll or use ↑ ↓ keys. Numbers come from <code>00-rook/data/callout-history.csv</code> and the 25 post-release tickets.</p>
+    <p class="foot-note reveal d4">Valerie, PM, Rook Dispatch · Sources: callout-history.csv, 25 post-release tickets, 4 handler interviews</p>
   </div>
 </section>
 
@@ -263,6 +263,911 @@
   </div>
 </section>
 
+<!-- Solution -->
+<section class="slide" id="s-fix">
+  <div class="wrap">
+    <div class="kicker reveal">The fix, as Kip would see it</div>
+    <h2 class="reveal d1">Put the window back, show handlers what is happening, and give stuck responders a way back.</h2>
+    <div class="grid g3" style="margin:26px 0 26px" id="phases">
+      <div class="card phase reveal d1"><span class="tag">1</span><h3>Revert the timeout: 60s → 90s</h3><ul><li>Timeout only, routing weights untouched</li><li>Ships as an out-of-cycle point release</li><li>Owner Marcus · approved by Marcus and Helen</li></ul></div>
+      <div class="card phase reveal d2"><span class="tag">2</span><h3>Improve the dashboard for handlers</h3><ul><li>A score and trend for each responder, not just "gone quiet"</li><li>Daily detail: accepted, declined, timed out</li><li>An early warning days before offers stop</li></ul></div>
+      <div class="card phase reveal d3"><span class="tag">3</span><h3>Recovery mode: one prioritized call every 3 days</h3><ul><li>A responder whose score drops below neutral enters recovery mode</li><li>They get 1 prioritized call every 3 days, ahead of their rank, to earn score back</li><li>Handlers see recovery mode on their dashboard, with no request needed</li></ul></div>
+    </div>
+    <div class="frame reveal d2">
+      <div class="chrome"><i></i><i></i><i></i><span>05-super-speed/prototype.html · Rook Dispatch handler console (prototype)</span><a href="05-super-speed/prototype.html" target="_blank" rel="noopener">Open full screen ↗</a></div>
+      <iframe title="Clickable prototype of Kip's handler console" srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Rook Dispatch — Handler Console (prototype)</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#161d2e;
+    --panel-2:#1c2438;
+    --border:#2a3350;
+    --text:#e8ecf5;
+    --text-dim:#9aa4bd;
+    --text-dimmer:#6b7591;
+    --accent:#5b8cff;
+    --good:#4fd1a5;
+    --quiet:#e0637a;
+    --quiet-bg:rgba(224,99,122,0.12);
+    --good-bg:rgba(79,209,165,0.10);
+    --bar-actual:#5b8cff;
+    --bar-actual-quiet:#3a4266;
+    --bar-projected:#4fd1a5;
+    --risk:#e0a23a;
+    --risk-bg:rgba(224,162,58,0.12);
+    --recover:#4fa8d1;
+    --recover-bg:rgba(79,168,209,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    min-height:100vh;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .name{ font-weight:700; font-size:17px; letter-spacing:0.2px; }
+  .brand .sep{ color: var(--text-dimmer); }
+  .brand .sub{ color: var(--text-dim); font-size:14px; }
+  .who{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color: var(--text-dim);
+    font-size:14px;
+  }
+  .avatar{
+    width:30px;height:30px;border-radius:50%;
+    background: linear-gradient(135deg,#5b8cff,#3a63c9);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;color:white;
+  }
+  main{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  .page-title{
+    font-size: 20px;
+    font-weight: 700;
+    margin: 4px 0 2px;
+  }
+  .page-sub{
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .page-note{
+    color: var(--text-dimmer);
+    font-size: 12.5px;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 26px;
+    flex-wrap:wrap;
+  }
+  .toggle-label{
+    font-size:13px;
+    color: var(--text-dimmer);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .toggle{
+    display:inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap:2px;
+  }
+  .toggle button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight:600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .toggle button.active{
+    background: var(--accent);
+    color: white;
+  }
+  .toggle button:not(.active):hover{
+    color: var(--text);
+  }
+  .ship-note{
+    font-size: 12.5px;
+    color: var(--text-dimmer);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{
+    width:6px;height:6px;border-radius:50%;
+    background: var(--good);
+    display:inline-block;
+    opacity:0;
+    transition: opacity 0.2s ease;
+  }
+  .dot.show{ opacity:1; }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .responder-name{
+    font-size: 16px;
+    font-weight:700;
+  }
+  .tags{
+    margin-top:4px;
+    font-size:12.5px;
+    color: var(--text-dimmer);
+  }
+  .tags span{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-right:6px;
+    display:inline-block;
+    margin-top:4px;
+  }
+  .status-pill{
+    font-size: 12.5px;
+    font-weight:600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space:nowrap;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .status-pill.quiet{ background: var(--quiet-bg); color: var(--quiet); }
+  .status-pill.good{ background: var(--good-bg); color: var(--good); }
+  .status-pill.risk{ background: var(--risk-bg); color: var(--risk); }
+  .status-pill.recover{ background: var(--recover-bg); color: var(--recover); }
+
+  .score-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .score-label{
+    font-size:11.5px;
+    color: var(--text-dimmer);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    white-space:nowrap;
+  }
+  .score-gauge{
+    flex:1;
+    height:8px;
+    background: var(--panel-2);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .score-fill{
+    height:100%;
+    border-radius:999px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1), background 0.4s ease;
+    width:50%;
+    background: var(--good);
+  }
+  .score-fill.risk{ background: var(--risk); }
+  .score-fill.quiet{ background: var(--quiet); }
+  .score-fill.recover{ background: var(--recover); }
+  .score-value{
+    font-size:13px;
+    font-weight:700;
+    min-width:34px;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .score-trend{
+    font-size:12px;
+    color: var(--text-dimmer);
+    min-width:70px;
+  }
+
+  .banner{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:13px;
+    line-height:1.5;
+    margin-bottom:16px;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .banner.predict{ background: var(--risk-bg); color: var(--risk); border:1px solid rgba(224,162,58,0.3); }
+  .banner.critical{ background: var(--quiet-bg); color: var(--quiet); border:1px solid rgba(224,99,122,0.3); }
+  .banner.recovering{ background: var(--recover-bg); color: var(--recover); border:1px solid rgba(79,168,209,0.3); }
+  .banner-icon{ font-size:15px; line-height:1.2; }
+  .banner-text{ color: var(--text-dim); }
+  .banner-text b{ color: inherit; }
+
+  .detail-toggle{
+    background:none;
+    border:none;
+    color: var(--accent);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:8px 0 0;
+    align-items:center;
+    gap:5px;
+  }
+  .detail-toggle:hover{ color:#7ea2ff; }
+  .detail-panel{
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+    display:none;
+  }
+  .detail-panel.open{ display:block; }
+  .detail-caption{
+    font-size:12.5px;
+    color: var(--text-dimmer);
+    margin-bottom:12px;
+    line-height:1.5;
+  }
+  .day-strip{
+    display:flex;
+    gap:3px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .day-cell{
+    width:15px;
+    height:15px;
+    border-radius:3px;
+    background: var(--panel-2);
+    border:1px solid var(--border);
+    position:relative;
+  }
+  .day-cell.accept{ background: var(--good); border-color: var(--good); }
+  .day-cell.decline{ background: var(--risk); border-color: var(--risk); }
+  .day-cell.timeout{ background: var(--quiet); border-color: var(--quiet); }
+  .day-cell.marker::after{
+    content:&quot;&quot;;
+    position:absolute;
+    left:50%; top:-7px;
+    transform:translateX(-50%);
+    width:0;height:0;
+    border-left:4px solid transparent;
+    border-right:4px solid transparent;
+    border-top:5px solid var(--risk);
+  }
+  .day-legend{
+    display:flex;
+    gap:14px;
+    font-size:11.5px;
+    color: var(--text-dimmer);
+    flex-wrap:wrap;
+  }
+  .day-legend-item{ display:flex; align-items:center; gap:5px; }
+  .day-legend-swatch{ width:10px;height:10px;border-radius:2px; flex-shrink:0; }
+  .marker-note{
+    font-size:12px;
+    color: var(--risk);
+    margin-top:10px;
+    font-weight:600;
+  }
+
+  .status-line{
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    min-height: 18px;
+    transition: opacity 0.15s ease;
+  }
+
+  .chart{
+    display:flex;
+    align-items:flex-end;
+    gap: 6px;
+    height: 90px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .bar-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100%;
+    justify-content:flex-end;
+    position:relative;
+  }
+  .bar{
+    width: 100%;
+    max-width: 26px;
+    border-radius: 4px 4px 2px 2px;
+    background: var(--bar-actual);
+    transition: height 0.5s cubic-bezier(.4,0,.2,1), background 0.4s ease, opacity 0.4s ease;
+    height: 2px;
+  }
+  .bar.quiet{ background: var(--bar-actual-quiet); }
+  .week-label{
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-top: 6px;
+    white-space:nowrap;
+  }
+
+  footer{
+    max-width:900px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+    color: var(--text-dimmer);
+    font-size: 12px;
+    line-height:1.6;
+  }
+  footer a{ color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class=&quot;brand&quot;>
+    <span class=&quot;name&quot;>Rook Dispatch</span>
+    <span class=&quot;sep&quot;>/</span>
+    <span class=&quot;sub&quot;>Handler Console</span>
+  </div>
+  <div class=&quot;who&quot;>
+    <span>Signed in as Kip</span>
+    <div class=&quot;avatar&quot;>K</div>
+  </div>
+</header>
+
+<main>
+  <div class=&quot;page-title&quot;>My responders</div>
+  <div class=&quot;page-sub&quot;>Where Kip would actually see this — his own roster, no separate report to go check.</div>
+  <div class=&quot;page-note&quot;>Kip actually manages two of these — Meteor Mite and The Gale. Thornwatch and Halyard are added here, not really his, so all four statuses below have a live example on screen at once.</div>
+
+  <div class=&quot;toggle-row&quot;>
+    <span class=&quot;toggle-label&quot;>Viewing</span>
+    <div class=&quot;toggle&quot;>
+      <button id=&quot;btn-current&quot; class=&quot;active&quot;>Current View</button>
+      <button id=&quot;btn-improved&quot;>Improved View</button>
+    </div>
+    <span class=&quot;ship-note&quot;><span class=&quot;dot&quot; id=&quot;ship-dot&quot;></span><span id=&quot;ship-text&quot;></span></span>
+  </div>
+
+  <div id=&quot;roster&quot;>
+
+  <!-- The Gale — Steady -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-top&quot;>
+      <div>
+        <div class=&quot;responder-name&quot;>The Gale</div>
+        <div class=&quot;tags&quot;><span>flight</span><span>aquatic</span></div>
+      </div>
+      <div class=&quot;status-pill good&quot; id=&quot;pill-gale&quot; style=&quot;display:none;&quot;>Steady</div>
+    </div>
+
+    <div class=&quot;banner&quot; id=&quot;banner-gale&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;banner-icon&quot; id=&quot;banner-icon-gale&quot;>⚠</span>
+      <span class=&quot;banner-text&quot; id=&quot;banner-text-gale&quot;></span>
+    </div>
+
+    <div class=&quot;score-row&quot; id=&quot;score-row-gale&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;score-label&quot;>Acceptance standing</span>
+      <div class=&quot;score-gauge&quot;><div class=&quot;score-fill&quot; id=&quot;fill-gale&quot; style=&quot;width:96%;&quot;></div></div>
+      <span class=&quot;score-value&quot; id=&quot;scoreval-gale&quot;>0.96</span>
+      <span class=&quot;score-trend&quot; id=&quot;trend-gale&quot;>→ steady</span>
+    </div>
+
+    <div class=&quot;status-line&quot; id=&quot;status-gale&quot;>8 calls this week.</div>
+    <div class=&quot;chart&quot; id=&quot;chart-gale&quot;></div>
+
+    <button class=&quot;detail-toggle&quot; id=&quot;toggle-detail-gale&quot; style=&quot;display:none;&quot;>▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class=&quot;detail-panel&quot; id=&quot;detail-gale&quot;>
+      <div class=&quot;detail-caption&quot;>Steady calls and answers the whole way through — the baseline everything else here is contrasted against.</div>
+      <div class=&quot;day-strip&quot; id=&quot;daystrip-gale&quot;></div>
+      <div class=&quot;day-legend&quot;>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--good);&quot;></div>accepted</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--risk);&quot;></div>declined</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--panel-2);border:1px solid var(--border);&quot;></div>no call that day</div>
+      </div>
+      <div class=&quot;marker-note&quot; id=&quot;marker-note-gale&quot;></div>
+    </div>
+  </div>
+
+  <!-- Thornwatch — Predicted decline -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-top&quot;>
+      <div>
+        <div class=&quot;responder-name&quot;>Thornwatch</div>
+        <div class=&quot;tags&quot;><span>hazmat-tolerant</span><span>crowd-management</span></div>
+      </div>
+      <div class=&quot;status-pill risk&quot; id=&quot;pill-thornwatch&quot; style=&quot;display:none;&quot;>Declining</div>
+    </div>
+
+    <div class=&quot;banner&quot; id=&quot;banner-thornwatch&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;banner-icon&quot; id=&quot;banner-icon-thornwatch&quot;>⚠</span>
+      <span class=&quot;banner-text&quot; id=&quot;banner-text-thornwatch&quot;></span>
+    </div>
+
+    <div class=&quot;score-row&quot; id=&quot;score-row-thornwatch&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;score-label&quot;>Acceptance standing</span>
+      <div class=&quot;score-gauge&quot;><div class=&quot;score-fill&quot; id=&quot;fill-thornwatch&quot; style=&quot;width:60%;&quot;></div></div>
+      <span class=&quot;score-value&quot; id=&quot;scoreval-thornwatch&quot;>0.60</span>
+      <span class=&quot;score-trend&quot; id=&quot;trend-thornwatch&quot;>↘ trending down</span>
+    </div>
+
+    <div class=&quot;status-line&quot; id=&quot;status-thornwatch&quot;>2 calls this week.</div>
+    <div class=&quot;chart&quot; id=&quot;chart-thornwatch&quot;></div>
+
+    <button class=&quot;detail-toggle&quot; id=&quot;toggle-detail-thornwatch&quot; style=&quot;display:none;&quot;>▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class=&quot;detail-panel&quot; id=&quot;detail-thornwatch&quot;>
+      <div class=&quot;detail-caption&quot;>Still above neutral, but a string of misses starting mid-August has it trending the wrong way — the kind of pattern that's invisible today and easy to miss once it starts.</div>
+      <div class=&quot;day-strip&quot; id=&quot;daystrip-thornwatch&quot;></div>
+      <div class=&quot;day-legend&quot;>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--good);&quot;></div>accepted</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--risk);&quot;></div>declined</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--quiet);&quot;></div>timed out</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--panel-2);border:1px solid var(--border);&quot;></div>no call that day</div>
+      </div>
+      <div class=&quot;marker-note&quot; id=&quot;marker-note-thornwatch&quot;></div>
+    </div>
+  </div>
+
+  <!-- Meteor Mite — Below neutral / critical -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-top&quot;>
+      <div>
+        <div class=&quot;responder-name&quot;>Meteor Mite</div>
+        <div class=&quot;tags&quot;><span>structural-entry</span><span>cold-weather</span></div>
+      </div>
+      <div class=&quot;status-pill quiet&quot; id=&quot;pill-mite&quot; style=&quot;display:none;&quot;>Stuck — needs the fix</div>
+    </div>
+
+    <div class=&quot;banner&quot; id=&quot;banner-mite&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;banner-icon&quot; id=&quot;banner-icon-mite&quot;>⚠</span>
+      <span class=&quot;banner-text&quot; id=&quot;banner-text-mite&quot;></span>
+    </div>
+
+    <div class=&quot;score-row&quot; id=&quot;score-row-mite&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;score-label&quot;>Acceptance standing</span>
+      <div class=&quot;score-gauge&quot;><div class=&quot;score-fill quiet&quot; id=&quot;fill-mite&quot; style=&quot;width:10%;&quot;></div></div>
+      <span class=&quot;score-value&quot; id=&quot;scoreval-mite&quot;>0.10</span>
+      <span class=&quot;score-trend&quot; id=&quot;trend-mite&quot;>↓ flat at floor</span>
+    </div>
+
+    <div class=&quot;status-line&quot; id=&quot;status-mite&quot;>0 calls this week.</div>
+    <div class=&quot;chart&quot; id=&quot;chart-mite&quot;></div>
+
+    <button class=&quot;detail-toggle&quot; id=&quot;toggle-detail-mite&quot; style=&quot;display:none;&quot;>▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class=&quot;detail-panel&quot; id=&quot;detail-mite&quot;>
+      <div class=&quot;detail-caption&quot;>Day by day, calls received and how each one went — the stretch where this actually happened. Today's console has nothing like this view; it's reconstructed here from the callout data.</div>
+      <div class=&quot;day-strip&quot; id=&quot;daystrip-mite&quot;></div>
+      <div class=&quot;day-legend&quot;>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--good);&quot;></div>accepted</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--risk);&quot;></div>declined</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--quiet);&quot;></div>timed out</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--panel-2);border:1px solid var(--border);&quot;></div>no call that day</div>
+      </div>
+      <div class=&quot;marker-note&quot; id=&quot;marker-note-mite&quot;></div>
+    </div>
+  </div>
+
+  <!-- Halyard — Recovering -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-top&quot;>
+      <div>
+        <div class=&quot;responder-name&quot;>Halyard</div>
+        <div class=&quot;tags&quot;><span>de-escalation</span><span>aquatic</span></div>
+      </div>
+      <div class=&quot;status-pill recover&quot; id=&quot;pill-halyard&quot; style=&quot;display:none;&quot;>Recovering</div>
+    </div>
+
+    <div class=&quot;banner&quot; id=&quot;banner-halyard&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;banner-icon&quot; id=&quot;banner-icon-halyard&quot;>↻</span>
+      <span class=&quot;banner-text&quot; id=&quot;banner-text-halyard&quot;></span>
+    </div>
+
+    <div class=&quot;score-row&quot; id=&quot;score-row-halyard&quot; style=&quot;display:none;&quot;>
+      <span class=&quot;score-label&quot;>Acceptance standing</span>
+      <div class=&quot;score-gauge&quot;><div class=&quot;score-fill recover&quot; id=&quot;fill-halyard&quot; style=&quot;width:62%;&quot;></div></div>
+      <span class=&quot;score-value&quot; id=&quot;scoreval-halyard&quot;>0.62</span>
+      <span class=&quot;score-trend&quot; id=&quot;trend-halyard&quot;>↗ improving</span>
+    </div>
+
+    <div class=&quot;status-line&quot; id=&quot;status-halyard&quot;>4 calls this week.</div>
+    <div class=&quot;chart&quot; id=&quot;chart-halyard&quot;></div>
+
+    <button class=&quot;detail-toggle&quot; id=&quot;toggle-detail-halyard&quot; style=&quot;display:none;&quot;>▸ Show daily detail — Aug 10 to Aug 31</button>
+    <div class=&quot;detail-panel&quot; id=&quot;detail-halyard&quot;>
+      <div class=&quot;detail-caption&quot;>A short critical stretch, then recovery-prioritized calls bring it back — the arc the proposed fix is built to produce, seen end to end.</div>
+      <div class=&quot;day-strip&quot; id=&quot;daystrip-halyard&quot;></div>
+      <div class=&quot;day-legend&quot;>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--good);&quot;></div>accepted</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--risk);&quot;></div>declined</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--quiet);&quot;></div>timed out</div>
+        <div class=&quot;day-legend-item&quot;><div class=&quot;day-legend-swatch&quot; style=&quot;background:var(--panel-2);border:1px solid var(--border);&quot;></div>no call that day</div>
+      </div>
+      <div class=&quot;marker-note&quot; id=&quot;marker-note-halyard&quot;></div>
+    </div>
+  </div>
+
+  </div>
+
+</main>
+
+<footer>
+  Prototype for review, not live data — built from the brief on Dispatch 4.2's two failure modes.
+  Weekly numbers are illustrative and match the real starvation pattern in the callout data; nothing here is a forecast —
+  Current View and Improved View show the same real weeks, the difference is what the console surfaces.
+  Daily detail and the acceptance score use the same formula as the routing code: +0.08 on an accept, −0.12 on a decline or timeout, floor 0, ceiling 1, starting neutral at 0.5.
+  Thornwatch and Halyard are added to this roster only to put a live example of all four statuses on screen together — Kip's actual roster is Meteor Mite and The Gale.
+</footer>
+
+<script>
+  const RESPONDER_ORDER = [&quot;gale&quot;, &quot;thornwatch&quot;, &quot;mite&quot;, &quot;halyard&quot;];
+
+  const weeksPast = [&quot;Jul 27&quot;,&quot;Aug 3&quot;,&quot;Aug 10&quot;,&quot;Aug 17&quot;,&quot;Aug 24&quot;,&quot;Aug 31&quot;,&quot;Sep 7&quot;,&quot;Sep 14&quot;,&quot;Sep 21&quot;];
+
+  const data = {
+    gale:       { past: [6,7,6,7,8,7,8,9,8] },
+    thornwatch: { past: [5,4,5,4,3,3,2,2,2] },
+    mite:       { past: [5,4,5,1,0,0,0,0,0] },
+    halyard:    { past: [5,5,4,2,1,1,2,3,4] }
+  };
+
+  const maxScale = 10;
+
+  // Per-responder display config: bar color and the sentence Improved View
+  // shows in place of the plain weekly count.
+  const RESPONDER_CONFIG = {
+    gale: {
+      quietBars: false,
+      richLine: &quot;Regular callout activity, no change either way.&quot;
+    },
+    thornwatch: {
+      quietBars: true,
+      richLine: &quot;Calls are still coming in, but fewer each week — and the trend's been pointing down since mid-August.&quot;
+    },
+    mite: {
+      quietBars: true,
+      richLine: &quot;No callout offers in 5 weeks.&quot;
+    },
+    halyard: {
+      quietBars: true,
+      richLine: &quot;Dropped below neutral for about two weeks; been climbing back since Aug 29.&quot;
+    }
+  };
+
+  // --- Daily detail: same scoring rule as history.py / config.py ---
+  const ACCEPT_CREDIT = 0.08;
+  const MISS_PENALTY = 0.12;
+  const SCORE_FLOOR = 0.0;
+  const SCORE_CEILING = 1.0;
+  const NEUTRAL_SCORE = 0.5;
+
+  // How close to neutral (from above) counts as &quot;trending toward it&quot; for the
+  // predictive alert, and how many days above neutral after a critical patch
+  // still count as &quot;recovering&quot; rather than fully &quot;steady&quot; again.
+  const PREDICT_MARGIN = 0.15;
+  const STABILIZE_WINDOW = 5;
+  const RECOVERY_CALL_INTERVAL_DAYS = 3;
+
+  const dayLabels = [&quot;Aug 10&quot;,&quot;Aug 11&quot;,&quot;Aug 12&quot;,&quot;Aug 13&quot;,&quot;Aug 14&quot;,&quot;Aug 15&quot;,&quot;Aug 16&quot;,&quot;Aug 17&quot;,
+    &quot;Aug 18&quot;,&quot;Aug 19&quot;,&quot;Aug 20&quot;,&quot;Aug 21&quot;,&quot;Aug 22&quot;,&quot;Aug 23&quot;,&quot;Aug 24&quot;,&quot;Aug 25&quot;,&quot;Aug 26&quot;,&quot;Aug 27&quot;,
+    &quot;Aug 28&quot;,&quot;Aug 29&quot;,&quot;Aug 30&quot;,&quot;Aug 31&quot;];
+
+  // N = no call that day, A = accepted, D = declined, T = timed out
+  const dailySeq = {
+    gale:       [&quot;A&quot;,&quot;N&quot;,&quot;A&quot;,&quot;D&quot;,&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;A&quot;,&quot;A&quot;,&quot;N&quot;,&quot;A&quot;,&quot;D&quot;,&quot;N&quot;,&quot;A&quot;,&quot;A&quot;,&quot;N&quot;,&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;D&quot;,&quot;A&quot;,&quot;N&quot;],
+    thornwatch: [&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;T&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;],
+    mite:       [&quot;N&quot;,&quot;A&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;T&quot;,&quot;N&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;T&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;],
+    halyard:    [&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;T&quot;,&quot;N&quot;,&quot;D&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;N&quot;,&quot;A&quot;,&quot;A&quot;,&quot;A&quot;,&quot;A&quot;,&quot;A&quot;,&quot;N&quot;]
+  };
+  const startScore = { gale: 0.68, thornwatch: 0.72, mite: 0.62, halyard: 0.58 };
+
+  function scoreSeries(start, seq){
+    let s = start;
+    return seq.map(o => {
+      if (o === &quot;A&quot;) s += ACCEPT_CREDIT;
+      else if (o === &quot;D&quot; || o === &quot;T&quot;) s -= MISS_PENALTY;
+      s = Math.max(SCORE_FLOOR, Math.min(SCORE_CEILING, s));
+      return s;
+    });
+  }
+
+  const dailyScores = {};
+  RESPONDER_ORDER.forEach(id => { dailyScores[id] = scoreSeries(startScore[id], dailySeq[id]); });
+
+  // The 4 alert states a responder's day can fall into:
+  //  steady     — healthy, no concern
+  //  predict    — still at/above neutral, but trending down: a prediction,
+  //               flagged before anything is actually wrong
+  //  critical   — dropped below neutral: recovery-prioritized calls kick in
+  //  recovering — back above neutral after a critical patch, not yet steady
+  const STATUS_META = {
+    steady: {
+      label: &quot;Steady&quot;,
+      pillClass: &quot;good&quot;,
+      fillClass: &quot;&quot;,
+      trend: &quot;→ steady&quot;,
+      banner: null
+    },
+    predict: {
+      label: &quot;Declining — may drop below neutral&quot;,
+      pillClass: &quot;risk&quot;,
+      fillClass: &quot;risk&quot;,
+      trend: &quot;↘ trending down&quot;,
+      banner: {
+        cls: &quot;predict&quot;,
+        icon: &quot;⚠&quot;,
+        html: &quot;<b>Acceptance score has been slipping for a few days.</b> Flagging it now, before it drops below neutral — nothing to do yet.&quot;
+      }
+    },
+    critical: {
+      label: &quot;Below neutral — recovery active&quot;,
+      pillClass: &quot;quiet&quot;,
+      fillClass: &quot;quiet&quot;,
+      trend: &quot;↓ below neutral&quot;,
+      banner: {
+        cls: &quot;critical&quot;,
+        icon: &quot;⚠&quot;,
+        html: &quot;<b>Score dropped below neutral.</b> Now getting 1 recovery-prioritized call every &quot; + RECOVERY_CALL_INTERVAL_DAYS + &quot; days to help restore it — no request needed.&quot;
+      }
+    },
+    recovering: {
+      label: &quot;Recovering — stabilizing&quot;,
+      pillClass: &quot;recover&quot;,
+      fillClass: &quot;recover&quot;,
+      trend: &quot;↗ improving&quot;,
+      banner: {
+        cls: &quot;recovering&quot;,
+        icon: &quot;↻&quot;,
+        html: &quot;<b>Back above neutral, but still rebuilding.</b> Recovery-prioritized calls continue until it's fully steady again.&quot;
+      }
+    }
+  };
+
+  const TRANSITION_NOTE = {
+    predict: &quot;flagged as declining, before it became critical&quot;,
+    critical: &quot;crossed below neutral — recovery-prioritized calls begin&quot;,
+    recovering: &quot;back above neutral — still stabilizing&quot;,
+    steady: &quot;fully steady again&quot;
+  };
+
+  // Classifies each day into one of the 4 states above, using only the
+  // score and the trend of recent outcomes — the same inputs a handler
+  // could actually see.
+  function classifyDaily(scores, seq){
+    let trend = &quot;up&quot;;
+    let daysAboveSinceCritical = Infinity;
+    return scores.map((score, i) => {
+      const o = seq[i];
+      if (o === &quot;A&quot;) trend = &quot;up&quot;;
+      else if (o === &quot;D&quot; || o === &quot;T&quot;) trend = &quot;down&quot;;
+
+      if (score < NEUTRAL_SCORE){
+        daysAboveSinceCritical = 0;
+        return &quot;critical&quot;;
+      }
+      daysAboveSinceCritical += 1;
+      if (daysAboveSinceCritical <= STABILIZE_WINDOW) return &quot;recovering&quot;;
+      if (trend === &quot;down&quot; &amp;&amp; score < NEUTRAL_SCORE + PREDICT_MARGIN) return &quot;predict&quot;;
+      return &quot;steady&quot;;
+    });
+  }
+
+  const dailyStatus = {};
+  RESPONDER_ORDER.forEach(id => { dailyStatus[id] = classifyDaily(dailyScores[id], dailySeq[id]); });
+
+  // Improved View sorts by severity: red, orange, blue, green.
+  const STATUS_RANK = { critical: 0, predict: 1, recovering: 2, steady: 3 };
+
+  function sortRoster(isImproved){
+    const roster = document.getElementById(&quot;roster&quot;);
+    const order = isImproved
+      ? RESPONDER_ORDER.slice().sort((a, b) => {
+          const sa = dailyStatus[a][dailyStatus[a].length - 1];
+          const sb = dailyStatus[b][dailyStatus[b].length - 1];
+          return STATUS_RANK[sa] - STATUS_RANK[sb];
+        })
+      : RESPONDER_ORDER;
+    order.forEach(id => {
+      roster.appendChild(document.getElementById(&quot;pill-&quot; + id).closest(&quot;.card&quot;));
+    });
+  }
+
+  function buildDayStrip(containerId, seq, scores, statuses){
+    const el = document.getElementById(containerId);
+    el.innerHTML = &quot;&quot;;
+    const outcomeClass = { N: &quot;none&quot;, A: &quot;accept&quot;, D: &quot;decline&quot;, T: &quot;timeout&quot; };
+    const outcomeWord = { N: &quot;no call&quot;, A: &quot;accepted&quot;, D: &quot;declined&quot;, T: &quot;timed out&quot; };
+    seq.forEach((o, i) => {
+      const cell = document.createElement(&quot;div&quot;);
+      cell.className = &quot;day-cell &quot; + outcomeClass[o];
+      if (i > 0 &amp;&amp; statuses[i] !== statuses[i - 1]) cell.classList.add(&quot;marker&quot;);
+      cell.title = dayLabels[i] + &quot; — &quot; + outcomeWord[o] + &quot; · score &quot; + scores[i].toFixed(2) +
+        &quot; · &quot; + STATUS_META[statuses[i]].label;
+      el.appendChild(cell);
+    });
+  }
+
+  function transitionNotes(statuses){
+    const notes = [];
+    for (let i = 1; i < statuses.length; i++){
+      if (statuses[i] !== statuses[i - 1]){
+        notes.push(&quot;▲ &quot; + dayLabels[i] + &quot; — &quot; + TRANSITION_NOTE[statuses[i]] + &quot;.&quot;);
+      }
+    }
+    return notes;
+  }
+
+  function initDailyDetail(){
+    RESPONDER_ORDER.forEach(id => {
+      buildDayStrip(&quot;daystrip-&quot; + id, dailySeq[id], dailyScores[id], dailyStatus[id]);
+      const notes = transitionNotes(dailyStatus[id]);
+      document.getElementById(&quot;marker-note-&quot; + id).innerHTML = notes.length
+        ? notes.join(&quot;<br>&quot;)
+        : &quot;No status changes in this stretch.&quot;;
+    });
+  }
+
+  function applyStatus(id, statusKey, isImproved){
+    const meta = STATUS_META[statusKey];
+    const pill = document.getElementById(&quot;pill-&quot; + id);
+    pill.textContent = meta.label;
+    pill.className = &quot;status-pill &quot; + meta.pillClass;
+
+    const banner = document.getElementById(&quot;banner-&quot; + id);
+    if (meta.banner){
+      banner.style.display = isImproved ? &quot;flex&quot; : &quot;none&quot;;
+      banner.className = &quot;banner &quot; + meta.banner.cls;
+      document.getElementById(&quot;banner-icon-&quot; + id).textContent = meta.banner.icon;
+      document.getElementById(&quot;banner-text-&quot; + id).innerHTML = meta.banner.html;
+    } else {
+      banner.style.display = &quot;none&quot;;
+    }
+
+    const fill = document.getElementById(&quot;fill-&quot; + id);
+    fill.className = &quot;score-fill &quot; + meta.fillClass;
+    document.getElementById(&quot;trend-&quot; + id).textContent = meta.trend;
+  }
+
+  function setupDetailToggle(btnId, panelId){
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    btn.addEventListener(&quot;click&quot;, () => {
+      const open = panel.classList.toggle(&quot;open&quot;);
+      btn.textContent = btn.textContent.replace(open ? &quot;▸&quot; : &quot;▾&quot;, open ? &quot;▾&quot; : &quot;▸&quot;);
+    });
+  }
+
+  function closeDetail(btnId, panelId){
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    panel.classList.remove(&quot;open&quot;);
+    btn.textContent = btn.textContent.replace(&quot;▾&quot;, &quot;▸&quot;);
+  }
+
+  function buildChart(containerId, weeks, values, opts){
+    const el = document.getElementById(containerId);
+    el.innerHTML = &quot;&quot;;
+    weeks.forEach((wk, i) => {
+      const col = document.createElement(&quot;div&quot;);
+      col.className = &quot;bar-col&quot;;
+
+      const bar = document.createElement(&quot;div&quot;);
+      bar.className = &quot;bar&quot;;
+      if (opts.quietBars) bar.classList.add(&quot;quiet&quot;);
+
+      const label = document.createElement(&quot;div&quot;);
+      label.className = &quot;week-label&quot;;
+      label.textContent = wk;
+
+      col.appendChild(bar);
+      col.appendChild(label);
+      el.appendChild(col);
+
+      const targetHeight = Math.max(2, (values[i] / maxScale) * 100) + &quot;%&quot;;
+      requestAnimationFrame(() => {
+        setTimeout(() => { bar.style.height = targetHeight; }, 30 + i * 25);
+      });
+      bar.title = wk + &quot;: &quot; + values[i] + &quot; callout offer&quot; + (values[i]===1 ? &quot;&quot; : &quot;s&quot;);
+    });
+  }
+
+  // Both views show the exact same real weeks — nothing here is a forecast.
+  // What changes is only which diagnostics the console surfaces.
+  function render(state){
+    const isImproved = state === &quot;improved&quot;;
+
+    document.getElementById(&quot;btn-current&quot;).classList.toggle(&quot;active&quot;, !isImproved);
+    document.getElementById(&quot;btn-improved&quot;).classList.toggle(&quot;active&quot;, isImproved);
+    document.getElementById(&quot;ship-dot&quot;).classList.toggle(&quot;show&quot;, isImproved);
+    document.getElementById(&quot;ship-text&quot;).textContent = isImproved
+      ? &quot;score, trend &amp; early-warning visibility now on&quot;
+      : &quot;&quot;;
+
+    sortRoster(isImproved);
+
+    RESPONDER_ORDER.forEach(id => {
+      // Show/hide the richer diagnostics that only exist in the improved
+      // view — in the current view, a handler just sees the roster and
+      // the weekly count.
+      document.getElementById(&quot;pill-&quot; + id).style.display = isImproved ? &quot;inline-block&quot; : &quot;none&quot;;
+      document.getElementById(&quot;score-row-&quot; + id).style.display = isImproved ? &quot;flex&quot; : &quot;none&quot;;
+      document.getElementById(&quot;toggle-detail-&quot; + id).style.display = isImproved ? &quot;inline-flex&quot; : &quot;none&quot;;
+      if (!isImproved) closeDetail(&quot;toggle-detail-&quot; + id, &quot;detail-&quot; + id);
+
+      // Same real weekly history either way.
+      buildChart(&quot;chart-&quot; + id, weeksPast, data[id].past, { quietBars: RESPONDER_CONFIG[id].quietBars });
+
+      const status = dailyStatus[id][dailyStatus[id].length - 1];
+      applyStatus(id, status, isImproved);
+
+      document.getElementById(&quot;status-&quot; + id).textContent = isImproved
+        ? RESPONDER_CONFIG[id].richLine
+        : data[id].past[data[id].past.length - 1] + &quot; calls this week.&quot;;
+
+      const scoreNow = dailyScores[id][dailyScores[id].length - 1];
+      document.getElementById(&quot;fill-&quot; + id).style.width = Math.round(scoreNow * 100) + &quot;%&quot;;
+      document.getElementById(&quot;scoreval-&quot; + id).textContent = scoreNow.toFixed(2);
+    });
+  }
+
+  document.getElementById(&quot;btn-current&quot;).addEventListener(&quot;click&quot;, () => render(&quot;current&quot;));
+  document.getElementById(&quot;btn-improved&quot;).addEventListener(&quot;click&quot;, () => render(&quot;improved&quot;));
+
+  initDailyDetail();
+  RESPONDER_ORDER.forEach(id => setupDetailToggle(&quot;toggle-detail-&quot; + id, &quot;detail-&quot; + id));
+
+  render(&quot;current&quot;);
+</script>
+
+</body>
+</html>
+"></iframe>
+    </div>
+    <p class="foot-note reveal d3">The live prototype (<b>05-super-speed/prototype.html</b>): switch <b>Today</b> ↔ <b>Once this ships</b> to compare Kip's console now with the improved dashboard, and expand <b>Show daily detail</b>. The weekly bars in the prototype are illustrative and the post-fix weeks are a projection.</p>
+  </div>
+</section>
+
 <!-- 3 · JOURNEY -->
 <section class="slide" id="s-journey">
   <div class="wrap">
@@ -288,7 +1193,7 @@
 <section class="slide" id="s-m1">
   <div class="wrap">
     <div class="kicker reveal"><span class="num">Module 1</span> Origin Story</div>
-    <h2 class="reveal d1">The timeout cut was planned. Telling the people who hold the phone was not.</h2>
+    <h2 class="reveal d1">The clear issue: an unexpected cut to answer time. The new question: why was it recovering?</h2>
     <div class="split" style="margin-top:20px">
       <div>
         <div class="prompt reveal d1">
@@ -297,48 +1202,66 @@
         </div>
         <div class="finding reveal d2">
           <div class="label">Finding</div>
-          <p>A change being planned doesn't make it safe. Nobody checked the 60s window against how responders actually answer, and only handlers were told. They read about it in release notes on release morning. Nobody owns notifying responders.</p>
+          <p>Being planned didn't make it safe. Nobody tested 60 seconds against how responders actually answer, and only handlers were told, in release notes on release morning.</p>
         </div>
-      </div>
-      <div class="card reveal d2">
-        <div class="label">Who heard about 4.2's callout changes, and how</div>
-        <div class="who-row"><span><b>Handlers</b>: timeout cut</span><span class="pill warn">Release notes, release morning</span></div>
-        <div class="who-row"><span><b>Responders</b>: timeout cut</span><span class="pill bad">Not told</span></div>
-        <div class="who-row"><span><b>Anyone outside engineering</b>: scoring reweight</span><span class="pill bad">Not told</span></div>
-        <div class="who-row"><span><b>Owner</b>: responder notifications</span><span class="pill bad">None exists</span></div>
-        <div class="who-row"><span><b>Owner</b>: release / rollout</span><span class="pill bad">None exists</span></div>
-        <div class="who-row"><span><b>Research behind the 60s cut</b></span><span class="pill warn">Roadmap driver: "Internal"</span></div>
-        <p style="margin-top:12px; font-size:13px">Sofia's handler interviews ran 2–5 Sep, after 4.2 shipped. Three of four described the "phone to stairs" miss without being asked.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5 · MODULE 2 -->
-<section class="slide" id="s-m2">
-  <div class="wrap">
-    <div class="kicker reveal"><span class="num">Module 2</span> Super Hearing</div>
-    <h2 class="reveal d1">The interviews and the tickets disagreed, and both were right.</h2>
-    <div class="split" style="margin-top:20px">
-      <div>
-        <div class="prompt reveal d1">
-          <div class="bar"><i></i><i></i><i></i><span>My prompt · 02-super-hearing #14</span></div>
-          <div class="q">You've now read both folders. Where do they disagree? What's loud in the interviews but rare in the tickets, and what's all over the tickets that nobody brought up in the interviews?<span class="caret"></span></div>
+        <div class="prompt reveal d2" style="margin-top:22px">
+          <div class="bar"><i></i><i></i><i></i><span>My prompt · 01-origin-story #6</span></div>
+          <div class="q">was anything fixed or deployed after the release 4.2 that acceptance started to recover?<span class="caret"></span></div>
         </div>
-        <div class="finding reveal d2">
+        <div class="finding reveal d3">
           <div class="label">Finding</div>
-          <p>The timeout is loud in interviews and shows up fast. "Gone quiet" dominates the tickets and builds slowly. They look like one problem but they're two failures with two causes. Cited silences grow from 6 days to 2 weeks to about a month, so the starvation is not fixing itself.</p>
+          <p>The timeout cut explained the first complaints. This answer was a useful new clue, but it made things more puzzling: nothing shipped after 12 Aug, yet acceptance climbed back to 72.7%.</p>
         </div>
       </div>
       <div class="grid" style="gap:14px">
         <div class="card reveal d2">
-          <div class="label">25 post-release tickets, by theme</div>
-          <div id="ticketBars"></div>
+          <div class="label">Who heard about 4.2's callout changes</div>
+          <div class="who-row"><span><b>Handlers</b>: timeout cut</span><span class="pill warn">Release-morning notes</span></div>
+          <div class="who-row"><span><b>Responders</b>: timeout cut</span><span class="pill bad">Not told</span></div>
+          <div class="who-row"><span><b>Everyone</b>: scoring change</span><span class="pill bad">Not told</span></div>
+          <div class="who-row"><span><b>Owner</b> of responder comms</span><span class="pill bad">None exists</span></div>
+          <div class="who-row"><span><b>Owner</b> of rollouts</span><span class="pill bad">None exists</span></div>
+          <div class="who-row"><span><b>Reason</b> for the 60s cut</span><span class="pill warn">Roadmap says "Internal"</span></div>
+          <p style="margin-top:12px; font-size:13px">Sofia's interviews ran 2–5 Sep, after 4.2 shipped. Three of four handlers described the "phone to stairs" miss without being asked.</p>
         </div>
-        <div class="card reveal d3">
-          <div class="label">4 handler interviews: raised unprompted</div>
-          <div id="interviewBars"></div>
+        <div class="card chart-card reveal d3">
+          <div class="label">Pooled acceptance, all 16 responders, by week</div>
+          <div class="chart" id="chartPooled1"></div>
+          <div class="legend"><span><i style="background:var(--accent)"></i>% of offers accepted</span><span><i style="background:var(--bad)"></i>4.2 ships (12 Aug)</span></div>
+          <p style="margin-top:10px; font-size:13px"><b>Solved in Module 3:</b> the recovery was partly a mirage. Starved responders dropped out of the offer pool, so the average rose while they stayed stuck.</p>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- 5 · MODULE 2 -->
+<section class="slide" id="s-m2">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">Module 2</span> Super Hearing</div>
+    <h2 class="reveal d1">Interviews and tickets gave different feedback, and both were right.</h2>
+    <div class="split" style="margin-top:20px">
+      <div>
+        <div class="prompt reveal d1">
+          <div class="bar"><i></i><i></i><i></i><span>My prompt · 02-super-hearing #13</span></div>
+          <div class="q">were the same issues repeated every week in the tickets or there is any pattern related to the type of the issue mainly raised every week?<span class="caret"></span></div>
+        </div>
+        <div class="finding reveal d2">
+          <div class="label">Finding</div>
+          <p>The timeout tickets fade after 27 Aug, while the starvation tickets keep rising. The silences people cite grow from 6 days to 2 weeks to about a month, so the starvation is not fixing itself.</p>
+        </div>
+        <div class="prompt reveal d2" style="margin-top:22px">
+          <div class="bar"><i></i><i></i><i></i><span>My prompt · 02-super-hearing #16</span></div>
+          <div class="q">create a graph per issue highlighting what issue was surfaced from the interviews and which was surfaced from tickets<span class="caret"></span></div>
+        </div>
+        <div class="finding reveal d3">
+          <div class="label">Finding</div>
+          <p>The graphs did more than visualize the data. They showed that interviews and tickets provide different types of feedback and serve different purposes. Interviews surfaced the timeout, tickets surfaced the starvation, so neither pile alone shows the full picture.</p>
+        </div>
+      </div>
+      <div class="card reveal d2">
+        <div class="label">Each issue: how often it surfaced in interviews vs. tickets (% of each source)</div>
+        <div id="issueBars"></div>
+        <p style="margin-top:10px; font-size:13px">Interviews (4 handlers) and tickets (25) don't rank the issues the same way. Interviews carry the timeout; tickets carry the starvation and the "is my account broken?" confusion.</p>
       </div>
     </div>
   </div>
@@ -349,26 +1272,57 @@
   <div class="wrap">
     <div class="kicker reveal"><span class="num">Module 3</span> Rewind</div>
     <h2 class="reveal d1">The people hurt most were the quietest. Half of them never filed a ticket.</h2>
-    <div class="split" style="margin-top:20px">
+    <div class="card chart-card reveal d1" style="margin-top:20px">
+      <div class="label">Callout offers sent per week: starved vs. thriving responders</div>
+      <div class="chart" id="chartPings"></div>
+      <div class="legend" id="pingLegend"></div>
+      <p style="margin-top:6px; font-size:12.5px">Hover a line for weekly values. Source: <code>callout-history.csv</code>.</p>
+    </div>
+    <div class="split" style="margin-top:34px">
       <div>
         <div class="prompt reveal d1">
-          <div class="bar"><i></i><i></i><i></i><span>My prompt · 03-rewind #5</span></div>
-          <div class="q">since 4 responders were losing 60-75 points Vesper, Farlight, The Undertow, Meteor Mite, have they filed the complaint tickets and when? what were their complaints?<span class="caret"></span></div>
+          <div class="bar"><i></i><i></i><i></i><span>My prompt · 03-rewind #7</span></div>
+          <div class="q">what are the changes in the average acceptance ratio per handler per week before and after the release?<span class="caret"></span></div>
         </div>
         <div class="finding reveal d2">
           <div class="label">Finding</div>
-          <p>No ticket mentions Vesper or Meteor Mite. They only appear as side comments in Sofia's design interviews. Meanwhile Nightwell, Ironvale, Stormwrack, Sgt. Falkirk and Cindermark filed "gone quiet" tickets while their offers were going up. Ticket volume can't tell us who was hurt. Offers per responder can.</p>
-        </div>
-        <div class="grid g2 reveal d3" style="margin-top:16px; gap:10px">
-          <div class="card" style="padding:14px 16px"><div class="label">Tickets filed about</div><b>Farlight, The Undertow</b></div>
-          <div class="card" style="padding:14px 16px; border-color:var(--bad)"><div class="label" style="color:var(--bad)">Zero tickets about</div><b>Vesper, Meteor Mite</b></div>
+          <p>Handler rollups hide the starvation. Kip runs Meteor Mite and The Gale. From 17 to 31 Aug Meteor Mite's acceptance falls from 69% to 14%, yet Kip's combined rate falls only about 8 points, from 74% to 66%, and is back to 73% by 31 Aug. Ticket volume can't tell us who was hurt, and neither can handler averages. Offers per responder can.</p>
         </div>
       </div>
       <div class="card chart-card reveal d2">
-        <div class="label">Callout offers sent per week: starved vs. thriving</div>
-        <div class="chart" id="chartPings"></div>
-        <div class="legend" id="pingLegend"></div>
-        <p style="margin-top:8px; font-size:12.5px">Hover a line for weekly values. Source: <code>callout-history.csv</code>.</p>
+        <div class="label">Kip's handler view vs. his two responders: weekly acceptance</div>
+        <div class="chart" id="chartKip"></div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>Kip combined (what a handler rollup shows)</span><span><i style="background:var(--bad)"></i>Meteor Mite</span><span><i style="background:var(--good)"></i>The Gale</span></div>
+        <p style="margin-top:8px; font-size:12.5px">Meteor Mite's last weeks rest on only 1–4 offers each. Source: <code>callout-history.csv</code>.</p>
+      </div>
+    </div>
+    <div class="split" style="margin-top:34px">
+      <div>
+        <div class="prompt reveal d1">
+          <div class="bar"><i></i><i></i><i></i><span>My prompt · 03-rewind #9</span></div>
+          <div class="q">create a table with top 4 responders after the release and the tickets they submitted and the worst 4 responders and the tickets number they submitted and their claim types. Also specify their handlers if they were targeting only 1 reponder or multiple. All acceptance ration before and after the release<span class="caret"></span></div>
+        </div>
+        <div class="finding reveal d2">
+          <div class="label">Finding</div>
+          <p>Putting tickets next to acceptance shows who was heard and who wasn't. No ticket mentions Vesper or Meteor Mite. They only appear as side comments in Sofia's design interviews. Meanwhile Nightwell, Ironvale, Stormwrack, Sgt. Falkirk and Cindermark filed "gone quiet" tickets while their offers were going up.</p>
+        </div>
+      </div>
+      <div class="card reveal d2">
+        <div class="label">Top 4 vs. worst 4 by acceptance after 4.2: tickets and acceptance</div>
+        <table style="width:100%; border-collapse:collapse; font-size:14px">
+          <tr style="text-align:left; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.06em"><th style="padding:6px 4px">Responder</th><th style="padding:6px 4px; text-align:center">Tickets</th><th style="padding:6px 4px">Acceptance: before → after</th></tr>
+          <tr><td colspan="3" style="padding:10px 4px 4px; font-size:12px; font-weight:700; color:var(--accent)">TOP 4 AFTER THE RELEASE</td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Stormwrack</b></td><td style="text-align:center">2</td><td>79.5% → <b>71.6%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Captain Vantage</b></td><td style="text-align:center">1</td><td>73.6% → <b>71.4%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>The Gale</b></td><td style="text-align:center">0</td><td>78.2% → <b>69.9%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Sgt. Falkirk</b></td><td style="text-align:center">2</td><td>80.0% → <b>69.1%</b></td></tr>
+          <tr><td colspan="3" style="padding:14px 4px 4px; font-size:12px; font-weight:700; color:var(--bad)">WORST 4 AFTER THE RELEASE</td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Vesper</b></td><td style="text-align:center"><span class="pill bad">0</span></td><td>81.9% → <b class="hl-bad">35.0%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>The Undertow</b></td><td style="text-align:center">3</td><td>77.8% → <b class="hl-bad">29.4%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Meteor Mite</b></td><td style="text-align:center"><span class="pill bad">0</span></td><td>68.7% → <b class="hl-bad">29.4%</b></td></tr>
+          <tr style="border-top:1px dashed var(--border)"><td style="padding:7px 4px"><b>Farlight</b></td><td style="text-align:center">1</td><td>73.6% → <b class="hl-bad">28.6%</b></td></tr>
+        </table>
+        <p style="margin-top:10px; font-size:12.5px">Before: 29 Jun–3 Aug. After: 10–31 Aug. Tickets counted per responder, whether a handler or the responder filed them. Source: <code>callout-history.csv</code> and the 25 tickets.</p>
       </div>
     </div>
   </div>
@@ -435,26 +1389,6 @@
   </div>
 </section>
 
-<!-- 9 · THE FIX (prototype) -->
-<section class="slide" id="s-fix">
-  <div class="wrap">
-    <div class="kicker reveal">The fix, as Kip would see it</div>
-    <h2 class="reveal d1">Put the window back, unstick the four, and close the hole so it can't happen again.</h2>
-    <div class="grid" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); gap:10px; margin:26px 0 26px" id="phases">
-      <div class="card phase reveal d1"><span class="tag">A</span><h3>Revert timeout 60s → 90s</h3><ul><li>Timeout only, weights untouched</li><li>Out-of-cycle point release</li><li>Owner Marcus · approve Marcus + Helen</li></ul></div>
-      <div class="arrow reveal d1">→</div>
-      <div class="card phase reveal d2"><span class="tag">B</span><h3>Reset the four to neutral (0.5)</h3><ul><li>Same day as A, <b>never before</b>, or they re-starve at 60s</li><li>Data change, no code</li><li>Told via their handlers</li></ul></div>
-      <div class="arrow reveal d2">→</div>
-      <div class="card phase reveal d3"><span class="tag">C</span><h3>Decay + guaranteed turn</h3><ul><li>Score eases back to neutral only once offers stop entirely</li><li>Backstop: one occasional offer, no rank boost</li><li>Next monthly train · Wen designs</li></ul></div>
-    </div>
-    <div class="frame reveal d2">
-      <div class="chrome"><i></i><i></i><i></i><span>05-super-speed/prototype.html · Rook Dispatch handler console (prototype)</span><a href="05-super-speed/prototype.html" target="_blank" rel="noopener">Open full screen ↗</a></div>
-      <iframe src="05-super-speed/prototype.html" title="Clickable prototype of Kip's handler console" loading="lazy"></iframe>
-    </div>
-    <p class="foot-note reveal d3">Try it: open <b>Prototype: Kip's console</b>, switch <b>Today</b> ↔ <b>Once this ships</b>, and expand <b>Show daily detail</b>. The weekly bars in the prototype are illustrative and the post-fix weeks are a projection. Open question for Helen: the console now shows a score and risk banner, which the brief's "doesn't do" list doesn't yet account for.</p>
-  </div>
-</section>
-
 <!-- 10 · MODULE 6 -->
 <section class="slide" id="s-m6">
   <div class="wrap">
@@ -468,15 +1402,14 @@
         </div>
         <div class="finding reveal d2">
           <div class="label">Finding</div>
-          <p>None of the four passes. <b>All four are missing a rollout / notification plan</b>, which is exactly how 4.2 shipped. It's a habit across the team, not a one-off. My own brief failed the same checklist until I rewrote it as <code>brief-v2.md</code>.</p>
+          <p>None of the four passes. <b>All four are missing a rollout or notification plan</b>, which is exactly how 4.2 shipped. It's a habit across the team, not a one-off, and my own first brief didn't pass either.</p>
         </div>
       </div>
       <div class="grid g2 reveal d2" style="gap:12px">
-        <div class="card brief"><span class="stamp">Rollout / notification: missing</span><div class="title">Bulk Callout</div><div class="meta">Dispatch · dated 12 Jan 2026</div><div class="flag">Also: dated before the September interviews it cites.</div></div>
-        <div class="card brief"><span class="stamp">Rollout / notification: missing</span><div class="title">Routing Override Audit Log</div><div class="meta">Dispatch · dated 5 Mar 2026</div><div class="flag">Says what gets logged, not who hears about it or when.</div></div>
-        <div class="card brief"><span class="stamp">Rollout / notification: missing</span><div class="title">Requisition Approval Chains</div><div class="meta">Supply · dated 14 Jul 2026</div><div class="flag">Also: adds a second approval step when Halloran's complaint is that approvals are too slow.</div></div>
-        <div class="card brief"><span class="stamp">Rollout / notification: missing</span><div class="title">Handler Phone App</div><div class="meta">Dispatch · dated 2 Aug 2026</div><div class="flag">Also: calls itself a Dispatch app, but the roadmap lists a Supply handler phone app.</div></div>
-        <div class="card brief" style="grid-column:1/-1; border-color:var(--good)"><span class="stamp ok">4 / 4 checks addressed</span><div class="title">Starved-responder fix: brief-v2.md</div><div class="flag">Rewrite prompt, 06-sidekicks #3: <span class="mono">create improved version of the brief which will pass the requirements from /review-checklist</span></div></div>
+        <div class="card brief"><span class="stamp">No rollout plan</span><div class="title">Bulk Callout</div><div class="meta">Dispatch · 12 Jan 2026</div></div>
+        <div class="card brief"><span class="stamp">No rollout plan</span><div class="title">Routing Override Audit Log</div><div class="meta">Dispatch · 5 Mar 2026</div></div>
+        <div class="card brief"><span class="stamp">No rollout plan</span><div class="title">Requisition Approval Chains</div><div class="meta">Supply · 14 Jul 2026</div></div>
+        <div class="card brief"><span class="stamp">No rollout plan</span><div class="title">Handler Phone App</div><div class="meta">Dispatch · 2 Aug 2026</div></div>
       </div>
     </div>
   </div>
@@ -486,37 +1419,15 @@
 <section class="slide" id="s-prevent">
   <div class="wrap">
     <div class="kicker reveal">Keeping it from happening again</div>
-    <h2 class="reveal d1">Each check in <code>/review-checklist</code> lines up with a gap 4.2 shipped with.</h2>
-    <p class="lede reveal d1">The skill (<code>.claude/skills/review-checklist/SKILL.md</code>) grades any brief on four checks, in a fixed order. Each check gets Pass, Partial or Missing, with a quote as evidence and a one-line fix. If 4.2 had gone through it, every check below would have been flagged before it shipped.</p>
+    <h2 class="reveal d1">A skill I wrote once, with four checks that each match a gap 4.2 shipped with.</h2>
+    <p class="lede reveal d1"><span class="mono">/review-checklist</span> grades any brief on four checks, in a fixed order. Each one gets Pass, Partial or Missing, with a quote as evidence and a one-line fix. It runs on demand and every Monday without me.</p>
     <div class="grid g2" style="gap:16px">
-      <div class="card check reveal d1"><div class="n">1</div><div><h3>Problem before fix</h3><p>Explain what's happening, to whom, and the evidence, before proposing a solution.</p><div class="miss"><b>4.2:</b> the 60s cut's roadmap driver was "Internal". No research on how responders actually answer came before it.</div></div></div>
-      <div class="card check reveal d2"><div class="n">2</div><div><h3>User personas</h3><p>Name the specific users affected and how, not just "users".</p><div class="miss"><b>4.2:</b> far-away and low-score responders weren't considered. Marcus still had to ask whether the reweight targeted decliners.</div></div></div>
-      <div class="card check reveal d3"><div class="n">3</div><div><h3>Agreed implementation plan</h3><p>One chosen path, with who signed off or who still needs to.</p><div class="miss"><b>4.2:</b> nobody could say whether hitting decliners was "a decision or a side effect". It ended up applying to everyone.</div></div></div>
-      <div class="card check reveal d4"><div class="n">4</div><div><h3>Rollout / notification plan</h3><p>Release vehicle, timing, and how affected users find out.</p><div class="miss"><b>4.2:</b> no rollout owner and no responder comms. Handlers got release notes on release morning.</div></div></div>
+      <div class="card check reveal d1"><div class="n">1</div><div><h3>Problem before fix</h3><p>Explain what's happening, to whom, and the evidence, before proposing a solution.</p><div class="miss"><b>4.2:</b> the 60s cut's roadmap driver was "Internal". No research on how responders actually answer came first.</div></div></div>
+      <div class="card check reveal d2"><div class="n">2</div><div><h3>User personas</h3><p>Name the specific users affected and how, not just "users".</p><div class="miss"><b>4.2:</b> far-away and low-score responders weren't considered. Marcus still had to ask who the reweight would hit.</div></div></div>
+      <div class="card check reveal d3"><div class="n">3</div><div><h3>Agreed implementation plan</h3><p>One chosen path, with who signed off or who still needs to.</p><div class="miss"><b>4.2:</b> nobody could say whether hitting decliners was a decision or a side effect.</div></div></div>
+      <div class="card check reveal d4"><div class="n">4</div><div><h3>Rollout / notification plan</h3><p>Release vehicle, timing, and how affected users find out.</p><div class="miss"><b>4.2:</b> no rollout owner and nothing sent to responders. Handlers got release-morning notes.</div></div></div>
     </div>
-    <div class="grid g3 reveal d3" style="margin-top:18px; gap:14px">
-      <div class="card"><div class="label">Runs on demand</div><p><span class="mono">/review-checklist &lt;brief&gt;</span> before any brief goes out.</p></div>
-      <div class="card"><div class="label">Runs weekly</div><p><span class="mono">weekly-brief-review</span>, Mondays ~9:11 AM, as a desktop scheduled task.</p></div>
-      <div class="card" style="border-color:var(--warn)"><div class="label" style="color:var(--warn)">Known limit</div><p>The desktop task only runs while the app is open. A cloud routine would run offline but only sees what's pushed to GitHub. Not decided yet.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- 12 · ASKS -->
-<section class="slide title-slide" id="s-ask">
-  <div class="wrap">
-    <div class="kicker reveal">What I need</div>
-    <h2 class="reveal d1">Three sign-offs, then phase A can ship within a week.</h2>
-    <div class="grid g3" style="margin-top:22px">
-      <div class="card reveal d1"><div class="label">Helen Achebe</div><h3>Approve the direction</h3><p>That includes changing a committed Q3 item (ping timeout tuning) and the open question of whether the console should show a risk banner.</p></div>
-      <div class="card reveal d2"><div class="label">Marcus Oyelaran</div><h3>Yes to moves 1 + 2</h3><p>Timeout back to 90s, reset the four, and an out-of-cycle point release for phase A. He owns <code>config.py</code> and release execution.</p></div>
-      <div class="card reveal d3"><div class="label">Wen Li</div><h3>Design review of decay + guaranteed turn</h3><p>It's her 2019 TODO. Also confirm whether it changes the Responder Availability Record that Supply reads.</p></div>
-    </div>
-    <div class="card reveal d4" style="margin-top:18px">
-      <div class="label">How we'll know it worked: per responder, never per handler</div>
-      <p>Offers per week for the four reset responders should climb from zero within two weeks of phase B. Timeout's share of missed offers should fall after phase A. Ravi supplies both through #data. Handler rollups hide the problem: Kip's Meteor Mite and The Gale cancel each other out.</p>
-    </div>
-    <p class="foot-note reveal d4">Sources: <code>CLAUDE.md</code> session notes · <code>0{1–6}-*/prompts.md</code> · <code>00-rook/data/callout-history.csv</code> · <code>00-rook/feedback/</code> · <code>05-super-speed/brief-v2.md</code>, <code>prototype.html</code> · <code>.claude/skills/review-checklist/SKILL.md</code>. Rook Industries is a fictional course scenario.</p>
+        <div class="card reveal d3" style="margin-top:18px"><div class="label">Runs on demand and weekly</div><p>Before any brief goes out, and every Monday around 9:11 AM as a scheduled task.</p></div>
   </div>
 </section>
 
@@ -546,7 +1457,7 @@
   /* ---- generic line chart ---- */
   function lineChart(host, opts){
     host.innerHTML = '';
-    const W = 560, H = opts.h || 260, m = {l:38, r:14, t:14, b:28};
+    const W = opts.w || 560, H = opts.h || 260, m = {l:38, r:14, t:14, b:28};
     const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, role:'img', 'aria-label':opts.aria}, host);
     const n = opts.labels.length;
     const x = i => m.l + i * (W - m.l - m.r) / (n - 1);
@@ -583,19 +1494,34 @@
   }
 
   function drawAll(){
-    lineChart($('#chartPooled'), {
+    ['#chartPooled', '#chartPooled1'].forEach(id => lineChart($(id), {
       aria:'Pooled acceptance by week, dropping from 77.9% to 54.2% in the release week', labels:weeks, min:.4, max:.9, ticks:[.4,.5,.6,.7,.8,.9],
       fmt:t => Math.round(t*100) + '%', tipFmt:v => (v*100).toFixed(1) + '%', marker:6, markerLabel:'4.2',
       series:[{v:pooled, c:'--accent', w:3, dots:pooled.map((_, i) => i === 6 ? '--bad' : '--accent')}]
-    });
+    }));
 
     const leg = $('#pingLegend'); leg.innerHTML = '';
     lineChart($('#chartPings'), {
       aria:'Weekly offers per responder: four starved responders fall to near zero after 4.2, two thriving responders rise', labels:weeks, min:0, max:22, ticks:[0,5,10,15,20],
-      fmt:t => t, tipFmt:v => v + ' offers', marker:6, markerLabel:'4.2', h:290,
+      fmt:t => t, tipFmt:v => v + ' offers', marker:6, markerLabel:'4.2', h:230, w:1100,
       series:Object.entries(pings).map(([name, s]) => ({name, v:s.v, c:s.c, w:s.c === '--good' ? 3 : 2}))
     });
     leg.innerHTML = `<span><i style="background:var(--bad)"></i>starved: Vesper, Meteor Mite, Farlight, The Undertow</span><span><i style="background:var(--good)"></i>thriving: Captain Vantage, The Gale</span>`;
+
+    // Kip's two responders vs. his handler-level rollup (from callout-history.csv: Meteor Mite + The Gale)
+    const mite = [[7,11],[9,12],[6,10],[7,11],[9,12],[8,11],[4,10],[1,4],[0,2],[0,1]];
+    const gale = [[10,13],[9,12],[10,13],[11,14],[11,13],[10,13],[9,15],[12,17],[14,20],[16,21]];
+    const rate = a => a.map(p => p[0] / p[1]);
+    const kip = mite.map((p, i) => [p[0] + gale[i][0], p[1] + gale[i][1]]);
+    lineChart($('#chartKip'), {
+      aria:'Kip\'s combined acceptance stays near 70 percent after 4.2 while his responder Meteor Mite falls to zero', labels:weeks, min:0, max:1, ticks:[0,.25,.5,.75,1],
+      fmt:t => Math.round(t*100) + '%', tipFmt:v => (v*100).toFixed(0) + '%', marker:6, markerLabel:'4.2', h:250,
+      series:[
+        {name:'The Gale', v:rate(gale), c:'--good', w:2},
+        {name:'Meteor Mite', v:rate(mite), c:'--bad', w:2.5},
+        {name:'Kip combined (handler view)', v:rate(kip), c:'--accent', w:4}
+      ]
+    });
 
     // daily reconstruction, same as prototype.html
     const seq = ['N','A','N','D','N','T','N','N','D','N','T','N','D','N','N','N','N','N','N','N','N','N'];
@@ -615,8 +1541,18 @@
     host.innerHTML = rows.map(r => `<div class="hbar"><span>${r[0]}</span><div class="track"><div class="fill" data-w="${r[1]/max*100}" style="background:var(${r[2]})"></div></div><span class="v">${r[3] || r[1]}</span></div>`).join('');
   }
   bars($('#promptBars'), [['1 · Origin Story',14,'--accent'],['2 · Super Hearing',16,'--accent'],['3 · Rewind',18,'--accent'],['4 · X-Ray Vision',20,'--accent'],['5 · Super Speed',12,'--accent'],['6 · Sidekicks',8,'--accent']], 20);
-  bars($('#ticketBars'), [['"Gone quiet"',14,'--bad'],['Starved, then lost the rare offer',5,'--bad'],['Pure timeout',4,'--warn'],['Intermittent',2,'--dim']], 14);
-  bars($('#interviewBars'), [['Offer expires first ("phone to stairs")',3,'--warn','3/4'],['Feast or famine',2,'--bad','2/4'],['"Is my account broken?"',0,'--dim','0/4']], 4);
+  const issues = [
+    ['Offer expires before they answer ("phone to stairs")', 3, 4, 4, 25],
+    ['Gone quiet / feast or famine (incl. starved, then lost the rare offer)', 2, 4, 19, 25],
+    ['"Is my account broken?" (can\'t see own status)', 0, 4, 12, 25],
+    ['Intermittent', 0, 4, 2, 25]
+  ];
+  $('#issueBars').innerHTML = issues.map(r => {
+    const ip = r[1] / r[2] * 100, tp = r[3] / r[4] * 100;
+    return `<div style="margin:14px 0 6px;font-size:13.5px;font-weight:700">${r[0]}</div>` +
+      `<div class="hbar"><span>Interviews</span><div class="track"><div class="fill" data-w="${ip}" style="background:var(--accent)"></div></div><span class="v">${r[1]}/${r[2]}</span></div>` +
+      `<div class="hbar"><span>Tickets</span><div class="track"><div class="fill" data-w="${tp}" style="background:var(--warn)"></div></div><span class="v">${r[3]}/${r[4]}</span></div>`;
+  }).join('');
 
   /* ---- dispatch queue ---- */
   const q = [['Captain Vantage','decline'],['The Gale','accept'],['Nightwell',''],['Ironvale',''],['Meteor Mite',''],['Vesper','']];
